@@ -98,6 +98,7 @@ class DashboardController extends Controller
             'totalPronostics',
             'participationRate',
             'totalMessages',
+            'messagesDelivered',
             'deliveryRate',
             'upcomingMatches',
             'plannedCampaigns',
