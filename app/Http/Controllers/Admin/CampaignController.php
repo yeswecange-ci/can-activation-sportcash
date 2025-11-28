@@ -139,7 +139,19 @@ class CampaignController extends Controller
      */
     public function confirmSend(Campaign $campaign)
     {
+        // Vérifier que le message existe
+        if (empty($campaign->message)) {
+            return redirect()->route('admin.campaigns.edit', $campaign)
+                ->with('error', 'Le message de la campagne est vide. Veuillez le remplir avant d\'envoyer.');
+        }
+
         $recipients = $this->getRecipients($campaign);
+
+        if ($recipients->isEmpty()) {
+            return redirect()->route('admin.campaigns.show', $campaign)
+                ->with('error', 'Aucun destinataire trouvé pour cette campagne.');
+        }
+
         $previewMessage = $this->previewMessage($campaign->message, $recipients->first());
 
         return view('admin.campaigns.confirm-send', compact('campaign', 'recipients', 'previewMessage'));
@@ -294,8 +306,12 @@ class CampaignController extends Controller
     /**
      * Personnaliser le message avec les variables utilisateur
      */
-    protected function personalizeMessage(string $message, User $user): string
+    protected function personalizeMessage(?string $message, User $user): string
     {
+        if (empty($message)) {
+            return '';
+        }
+
         $replacements = [
             '{nom}' => $user->name,
             '{prenom}' => $user->name,
@@ -309,8 +325,12 @@ class CampaignController extends Controller
     /**
      * Prévisualiser le message
      */
-    protected function previewMessage(string $message, ?User $user): string
+    protected function previewMessage(?string $message, ?User $user): string
     {
+        if (empty($message)) {
+            return '[Message vide]';
+        }
+
         if (!$user) {
             return $message;
         }

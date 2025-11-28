@@ -6,6 +6,7 @@
     <title>@yield('title', 'Dashboard') - CAN 2025 Kinshasa</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body class="bg-gray-100">
     <div class="flex h-screen overflow-hidden">
