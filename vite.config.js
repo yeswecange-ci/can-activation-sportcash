@@ -18,44 +18,5 @@ export default defineConfig({
                 manualChunks: undefined,
             },
         },
-        // Optimisations pour la production
-        minify: 'terser',
-        cssMinify: true,
-        chunkSizeWarningLimit: 1000,
-    },
-
-    // Configuration du serveur de développement
-    server: {
-        host: true,
-        port: 5173,
-        strictPort: false,
-        hmr: {
-            host: 'localhost',
-        },
-    },
-
-    // Résolution des chemins
-    resolve: {
-        alias: {
-            '@': '/resources/js',
-            '~': '/resources',
-        },
-    },
-
-    // Optimisations des dépendances
-    optimizeDeps: {
-        include: ['alpinejs'],
-        exclude: [],
-    },
-
-    // Configuration CSS
-    css: {
-        postcss: {
-            plugins: [
-                require('tailwindcss'),
-                require('autoprefixer'),
-            ],
-        },
-        devSourcemap: true,
     },
 });
