@@ -1,3 +1,170 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Animations personnalisées pour la page de login */
+@layer utilities {
+    /* Animation de flottement pour le logo */
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    .logo-float:hover {
+        animation: float 2s ease-in-out infinite;
+    }
+
+    /* Animation de rotation pour le loader */
+    @keyframes rotation {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .loader {
+        width: 18px;
+        height: 18px;
+        border: 2px solid #ffffff;
+        border-bottom-color: transparent;
+        border-radius: 50%;
+        display: none;
+    }
+
+    .loader.active {
+        display: inline-block;
+        animation: rotation 1s linear infinite;
+    }
+}
+
+/* Styles de base pour éviter le scroll */
+@layer base {
+    html, body {
+        height: 100vh;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+    }
+}
+
+/* Composants réutilisables */
+@layer components {
+    /* Bouton primaire Bracongo */
+    .btn-primary-bracongo {
+        @apply w-full flex items-center justify-center px-6 py-3 lg:py-3.5
+               bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold
+               rounded-lg hover:from-red-700 hover:to-red-800
+               focus:outline-none focus:ring-4 focus:ring-red-500/50
+               transition-all shadow-lg shadow-red-500/30
+               hover:shadow-xl hover:shadow-red-500/40
+               transform hover:-translate-y-0.5
+               disabled:opacity-75 disabled:cursor-not-allowed;
+    }
+
+    /* Input style */
+    .input-bracongo {
+        @apply block w-full pl-10 pr-4 py-2.5 lg:py-3
+               bg-gray-50 border-2 border-gray-200 rounded-lg
+               focus:outline-none focus:ring-2 focus:ring-red-500
+               focus:border-transparent focus:bg-white
+               transition-all text-gray-900 placeholder-gray-400
+               text-sm lg:text-base;
+    }
+
+    /* Carte blanche avec ombre */
+    .card-white {
+        @apply bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 lg:p-8;
+    }
+
+    /* Badge de statut actif */
+    .badge-active {
+        @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+               bg-green-100 text-green-800;
+    }
+
+    /* Badge de statut inactif */
+    .badge-inactive {
+        @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+               bg-gray-100 text-gray-800;
+    }
+}
+
+/* Animations supplémentaires */
+@layer utilities {
+    /* Animation d'apparition en fondu */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fadeInUp {
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    /* Animation de pulsation */
+    @keyframes pulse-slow {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    .animate-pulse-slow {
+        animation: pulse-slow 4s ease-in-out infinite;
+    }
+}
+
+/* Scrollbar personnalisée pour les tables et listes */
+@layer utilities {
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        background: #dc2626;
+        border-radius: 10px;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        background: #b91c1c;
+    }
+}
+
+/* Styles pour les messages d'alerte */
+@layer components {
+    .alert-success {
+        @apply p-4 mb-4 rounded-lg bg-green-50 border-l-4 border-green-500 text-green-700;
+    }
+
+    .alert-error {
+        @apply p-4 mb-4 rounded-lg bg-red-50 border-l-4 border-red-500 text-red-700;
+    }
+
+    .alert-warning {
+        @apply p-4 mb-4 rounded-lg bg-yellow-50 border-l-4 border-yellow-500 text-yellow-700;
+    }
+
+    .alert-info {
+        @apply p-4 mb-4 rounded-lg bg-blue-50 border-l-4 border-blue-500 text-blue-700;
+    }
+}
