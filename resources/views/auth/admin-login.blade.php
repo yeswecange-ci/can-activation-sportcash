@@ -5,50 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion Admin - CAN 2025</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <style>
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .logo-float:hover {
-            animation: float 2s ease-in-out infinite;
-        }
-
-        html, body {
-            height: 100vh;
-            overflow: hidden;
-            margin: 0;
-            padding: 0;
-        }
-
-        .loader {
-            width: 18px;
-            height: 18px;
-            border: 2px solid #ffffff;
-            border-bottom-color: transparent;
-            border-radius: 50%;
-            display: none;
-        }
-
-        .loader.active {
-            display: inline-block;
-            animation: rotation 1s linear infinite;
-        }
-
-        @keyframes rotation {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
 </head>
-<body class="bg-gradient-to-br from-red-50 via-white to-gray-50">
+<body class="bg-gradient-to-br from-red-50 via-white to-gray-50 h-screen overflow-hidden m-0 p-0">
     <div class="h-screen flex items-center justify-center px-4 py-6">
         <div class="w-full max-w-6xl h-full max-h-[800px] flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-12">
 
             <!-- Section Logo et Présentation -->
             <div class="w-full lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left space-y-4 lg:space-y-6">
-                <div class="mb-2 lg:mb-4 logo-float">
+                <div class="mb-2 lg:mb-4 transition-transform duration-300 hover:-translate-y-2">
                     <img src="{{ url('/images/logobra.png') }}" alt="Bracongo Logo" class="w-32 h-32 lg:w-40 lg:h-40 object-contain">
                 </div>
 
@@ -63,7 +27,7 @@
                 <!-- Points forts -->
                 <div class="mt-4 lg:mt-6 space-y-3 lg:space-y-4 hidden lg:block">
                     <div class="flex items-center group">
-                        <div class="w-9 h-9 bg-red-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-red-600 transition-colors">
+                        <div class="w-9 h-9 bg-red-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-red-600 transition-colors duration-300">
                             <svg class="w-5 h-5 text-red-600 group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
                             </svg>
@@ -71,7 +35,7 @@
                         <span class="text-gray-700 text-sm lg:text-base font-medium">Gestion des activations en temps réel</span>
                     </div>
                     <div class="flex items-center group">
-                        <div class="w-9 h-9 bg-red-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-red-600 transition-colors">
+                        <div class="w-9 h-9 bg-red-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-red-600 transition-colors duration-300">
                             <svg class="w-5 h-5 text-red-600 group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
                             </svg>
@@ -79,7 +43,7 @@
                         <span class="text-gray-700 text-sm lg:text-base font-medium">Suivi des partenaires et villages</span>
                     </div>
                     <div class="flex items-center group">
-                        <div class="w-9 h-9 bg-red-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-red-600 transition-colors">
+                        <div class="w-9 h-9 bg-red-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-red-600 transition-colors duration-300">
                             <svg class="w-5 h-5 text-red-600 group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                             </svg>
@@ -181,13 +145,16 @@
                         <button
                             type="submit"
                             id="login-btn"
-                            class="w-full flex items-center justify-center px-6 py-3 lg:py-3.5 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-lg hover:from-red-700 hover:to-red-800 focus:outline-none focus:ring-4 focus:ring-red-500/50 transition-all shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 transform hover:-translate-y-0.5 text-sm lg:text-base"
+                            class="w-full flex items-center justify-center px-6 py-3 lg:py-3.5 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-lg hover:from-red-700 hover:to-red-800 focus:outline-none focus:ring-4 focus:ring-red-500/50 transition-all shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 transform hover:-translate-y-0.5 text-sm lg:text-base disabled:opacity-75 disabled:cursor-not-allowed"
                         >
                             <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clip-rule="evenodd"/>
                             </svg>
                             <span id="btn-text">Se connecter</span>
-                            <span class="loader ml-2"></span>
+                            <svg id="loader" class="hidden ml-2 w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
                         </button>
                     </form>
                 </div>
@@ -210,15 +177,13 @@
             const loginForm = document.getElementById('login-form');
             const loginBtn = document.getElementById('login-btn');
             const btnText = document.getElementById('btn-text');
-            const loader = document.querySelector('.loader');
+            const loader = document.getElementById('loader');
 
             if (loginForm && loginBtn && btnText && loader) {
                 loginForm.addEventListener('submit', function(e) {
-                    // Activer le loader
-                    loader.classList.add('active');
+                    loader.classList.remove('hidden');
                     btnText.textContent = 'Connexion...';
                     loginBtn.disabled = true;
-                    loginBtn.classList.add('opacity-75', 'cursor-not-allowed');
                 });
             }
         });
