@@ -12,7 +12,17 @@ class CampaignMessage extends Model
     protected $fillable = [
         'campaign_id',
         'template_id',
+        'user_id',
         'content',
+        'message',
+        'status',
+        'sent_at',
+        'error_message',
+        'twilio_sid',
+    ];
+
+    protected $casts = [
+        'sent_at' => 'datetime',
     ];
 
     // Relations
@@ -24,5 +34,10 @@ class CampaignMessage extends Model
     public function template()
     {
         return $this->belongsTo(MessageTemplate::class, 'template_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }
