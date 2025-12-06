@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\WhatsAppWebhookController;
 use App\Http\Controllers\Api\TwilioStudioController;
+use App\Http\Controllers\Api\TwilioWebhookController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,6 +17,13 @@ Route::post('/webhook/whatsapp', [WhatsAppWebhookController::class, 'receiveMess
 
 Route::post('/webhook/whatsapp/status', [WhatsAppWebhookController::class, 'statusCallback'])
     ->name('api.whatsapp.status');
+
+// Webhooks Twilio pour les campagnes
+Route::post('/webhook/twilio/status', [TwilioWebhookController::class, 'statusCallback'])
+    ->name('api.twilio.status-callback');
+
+Route::post('/webhook/twilio/incoming', [TwilioWebhookController::class, 'incomingMessage'])
+    ->name('api.twilio.incoming');
 
 // Endpoints pour Twilio Studio Flow CAN 2025
 Route::prefix('can')->group(function () {

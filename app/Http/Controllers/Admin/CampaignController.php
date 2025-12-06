@@ -208,18 +208,29 @@ class CampaignController extends Controller
         $sent = 0;
         $failed = 0;
 
+        // URL pour les status callbacks Twilio
+        $statusCallbackUrl = route('api.twilio.status-callback');
+
         foreach ($messages as $message) {
             try {
-                $success = $this->whatsapp->sendMessage(
+                $result = $this->whatsapp->sendMessage(
                     $message->user->phone,
-                    $message->message
+                    $message->message,
+                    $statusCallbackUrl
                 );
 
-                if ($success) {
-                    $message->update(['status' => 'sent', 'sent_at' => now()]);
+                if ($result && $result['success']) {
+                    $message->update([
+                        'status' => 'sent',
+                        'sent_at' => now(),
+                        'twilio_sid' => $result['sid']
+                    ]);
                     $sent++;
                 } else {
-                    $message->update(['status' => 'failed', 'error_message' => 'Failed to send']);
+                    $message->update([
+                        'status' => 'failed',
+                        'error_message' => 'Failed to send'
+                    ]);
                     $failed++;
                 }
 

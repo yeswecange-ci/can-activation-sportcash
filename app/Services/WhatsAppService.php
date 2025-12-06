@@ -37,9 +37,10 @@ class WhatsAppService
      *
      * @param string $to Numéro au format whatsapp:+243XXXXXXXXX
      * @param string $message Contenu du message
-     * @return bool
+     * @param string|null $statusCallback URL pour recevoir les status callbacks
+     * @return array|false ['success' => bool, 'sid' => string, 'status' => string] ou false
      */
-    public function sendMessage(string $to, string $message): bool
+    public function sendMessage(string $to, string $message, ?string $statusCallback = null)
     {
         if (!$this->twilio) {
             Log::error('Twilio not configured');
@@ -52,13 +53,17 @@ class WhatsAppService
                 $to = 'whatsapp:' . $to;
             }
 
-            $result = $this->twilio->messages->create(
-                $to,
-                [
-                    'from' => $this->from,
-                    'body' => $message
-                ]
-            );
+            $params = [
+                'from' => $this->from,
+                'body' => $message
+            ];
+
+            // Ajouter le status callback si fourni
+            if ($statusCallback) {
+                $params['statusCallback'] = $statusCallback;
+            }
+
+            $result = $this->twilio->messages->create($to, $params);
 
             Log::info('WhatsApp message sent', [
                 'to' => $to,
@@ -66,7 +71,11 @@ class WhatsAppService
                 'status' => $result->status
             ]);
 
-            return true;
+            return [
+                'success' => true,
+                'sid' => $result->sid,
+                'status' => $result->status
+            ];
         } catch (\Exception $e) {
             Log::error('WhatsApp send error: ' . $e->getMessage(), [
                 'to' => $to,
