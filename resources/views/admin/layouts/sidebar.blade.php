@@ -34,7 +34,7 @@
         </a>
 
         <!-- Partenaires -->
-        <a href="{{ route('admin.partners.index') }}"
+        {{-- <a href="{{ route('admin.partners.index') }}"
             class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-all rounded-lg group {{ request()->routeIs('admin.partners.*') ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg' : '' }}">
             <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.partners.*') ? 'text-white' : 'text-gray-400 group-hover:text-purple-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -42,7 +42,7 @@
                 </path>
             </svg>
             <span class="font-medium">Partenaires</span>
-        </a>
+        </a> --}}
 
         <!-- Matchs -->
         {{-- <a href="{{ route('admin.matches.index') }}"
