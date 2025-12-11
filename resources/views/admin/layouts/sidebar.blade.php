@@ -3,7 +3,7 @@
         <div class="flex items-center space-x-3">
             <div class="text-4xl">🦁</div>
             <div>
-                <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">CAN 2025</h1>
+                <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">FOOT 2025</h1>
                 <p class="text-gray-400 text-xs">Kinshasa</p>
             </div>
         </div>
@@ -45,14 +45,14 @@
         </a>
 
         <!-- Matchs -->
-        <a href="{{ route('admin.matches.index') }}"
+        {{-- <a href="{{ route('admin.matches.index') }}"
             class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-all rounded-lg group {{ request()->routeIs('admin.matches.*') ? 'bg-gradient-to-r from-orange-600 to-orange-700 text-white shadow-lg' : '' }}">
             <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.matches.*') ? 'text-white' : 'text-gray-400 group-hover:text-orange-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
             </svg>
             <span class="font-medium">Matchs</span>
-        </a>
+        </a> --}}
 
         <!-- Joueurs -->
         <a href="{{ route('admin.users.index') }}"
@@ -66,7 +66,7 @@
         </a>
 
         <!-- Lots -->
-        <a href="{{ route('admin.prizes.index') }}"
+        {{-- <a href="{{ route('admin.prizes.index') }}"
             class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-all rounded-lg group {{ request()->routeIs('admin.prizes.*') ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white shadow-lg' : '' }}">
             <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.prizes.*') ? 'text-white' : 'text-gray-400 group-hover:text-yellow-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -74,7 +74,7 @@
                 </path>
             </svg>
             <span class="font-medium">Lots</span>
-        </a>
+        </a> --}}
 
         <!-- Pronostics -->
         <a href="{{ route('admin.pronostics.index') }}"
@@ -88,7 +88,7 @@
         </a>
 
         <!-- Classement -->
-        <a href="{{ route('admin.leaderboard') }}"
+        {{-- <a href="{{ route('admin.leaderboard') }}"
             class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-all rounded-lg group {{ request()->routeIs('admin.leaderboard*') ? 'bg-gradient-to-r from-pink-600 to-pink-700 text-white shadow-lg' : '' }}">
             <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.leaderboard*') ? 'text-white' : 'text-gray-400 group-hover:text-pink-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -96,7 +96,7 @@
                 </path>
             </svg>
             <span class="font-medium">Classement</span>
-        </a>
+        </a> --}}
 
         <!-- QR Codes -->
         <a href="{{ route('admin.qrcodes.index') }}"
@@ -110,7 +110,7 @@
         </a>
 
         <!-- Templates -->
-        <a href="{{ route('admin.templates.index') }}"
+        {{-- <a href="{{ route('admin.templates.index') }}"
             class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-all rounded-lg group {{ request()->routeIs('admin.templates.*') ? 'bg-gradient-to-r from-gray-600 to-gray-700 text-white shadow-lg' : '' }}">
             <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.templates.*') ? 'text-white' : 'text-gray-400 group-hover:text-gray-300' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -118,10 +118,10 @@
                 </path>
             </svg>
             <span class="font-medium">Templates</span>
-        </a>
+        </a> --}}
 
         <!-- Campaigns (Push) -->
-        <a href="{{ route('admin.campaigns.index') }}"
+        {{-- <a href="{{ route('admin.campaigns.index') }}"
             class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-all rounded-lg group {{ request()->routeIs('admin.campaigns.*') ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg' : '' }}">
             <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.campaigns.*') ? 'text-white' : 'text-gray-400 group-hover:text-red-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -129,7 +129,7 @@
                 </path>
             </svg>
             <span class="font-medium">Campagnes</span>
-        </a>
+        </a> --}}
 
         <!-- Analytics -->
         <a href="{{ route('admin.analytics') }}"
