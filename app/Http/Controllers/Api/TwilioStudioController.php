@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -22,11 +21,11 @@ class TwilioStudioController extends Controller
     public function scan(Request $request)
     {
         $validated = $request->validate([
-            'phone' => 'required|string',
-            'source_type' => 'required|string',
+            'phone'         => 'required|string',
+            'source_type'   => 'required|string',
             'source_detail' => 'required|string',
-            'timestamp' => 'nullable|string',
-            'status' => 'nullable|string',
+            'timestamp'     => 'nullable|string',
+            'status'        => 'nullable|string',
         ]);
 
         $phone = $this->formatPhone($validated['phone']);
@@ -35,10 +34,10 @@ class TwilioStudioController extends Controller
         $session = ConversationSession::updateOrCreate(
             ['phone' => $phone],
             [
-                'state' => ConversationSession::STATE_SCAN,
-                'data' => [
-                    'source_type' => $validated['source_type'],
-                    'source_detail' => $validated['source_detail'],
+                'state'         => ConversationSession::STATE_SCAN,
+                'data'          => [
+                    'source_type'    => $validated['source_type'],
+                    'source_detail'  => $validated['source_detail'],
                     'scan_timestamp' => $validated['timestamp'] ?? now()->toDateTimeString(),
                 ],
                 'last_activity' => now(),
@@ -46,13 +45,13 @@ class TwilioStudioController extends Controller
         );
 
         Log::info('Twilio Studio - Scan logged', [
-            'phone' => $phone,
+            'phone'  => $phone,
             'source' => $validated['source_type'] . ' / ' . $validated['source_detail'],
         ]);
 
         return response()->json([
-            'success' => true,
-            'message' => 'Scan logged successfully',
+            'success'    => true,
+            'message'    => 'Scan logged successfully',
             'session_id' => $session->id,
         ]);
     }
@@ -64,8 +63,8 @@ class TwilioStudioController extends Controller
     public function optin(Request $request)
     {
         $validated = $request->validate([
-            'phone' => 'required|string',
-            'status' => 'nullable|string',
+            'phone'     => 'required|string',
+            'status'    => 'nullable|string',
             'timestamp' => 'nullable|string',
         ]);
 
@@ -75,7 +74,7 @@ class TwilioStudioController extends Controller
 
         if ($session) {
             $session->update([
-                'state' => ConversationSession::STATE_OPT_IN,
+                'state'         => ConversationSession::STATE_OPT_IN,
                 'last_activity' => now(),
             ]);
         }
@@ -95,12 +94,12 @@ class TwilioStudioController extends Controller
     public function inscription(Request $request)
     {
         $validated = $request->validate([
-            'phone' => 'required|string',
-            'name' => 'required|string|min:2',
-            'source_type' => 'required|string',
+            'phone'         => 'required|string',
+            'name'          => 'required|string|min:2',
+            'source_type'   => 'required|string',
             'source_detail' => 'required|string',
-            'status' => 'nullable|string',
-            'timestamp' => 'nullable|string',
+            'status'        => 'nullable|string',
+            'timestamp'     => 'nullable|string',
         ]);
 
         $phone = $this->formatPhone($validated['phone']);
@@ -111,29 +110,29 @@ class TwilioStudioController extends Controller
         if ($user) {
             // Utilisateur déjà inscrit - mise à jour
             $user->update([
-                'name' => ucwords(strtolower($validated['name'])),
-                'source_type' => $validated['source_type'],
-                'source_detail' => $validated['source_detail'],
+                'name'                => ucwords(strtolower($validated['name'])),
+                'source_type'         => $validated['source_type'],
+                'source_detail'       => $validated['source_detail'],
                 'registration_status' => 'INSCRIT',
-                'opted_in_at' => now(),
-                'is_active' => true,
+                'opted_in_at'         => now(),
+                'is_active'           => true,
             ]);
 
             Log::info('Twilio Studio - User updated', [
                 'user_id' => $user->id,
-                'phone' => $phone,
+                'phone'   => $phone,
             ]);
         } else {
             // Nouvel utilisateur - extraire le village depuis la source
             $villageId = $this->extractVillageFromSource($validated['source_type'], $validated['source_detail']);
 
-            if (!$villageId) {
+            if (! $villageId) {
                 // Si pas de village trouvé, utiliser le premier village actif
                 $defaultVillage = Village::where('is_active', true)->first();
-                $villageId = $defaultVillage ? $defaultVillage->id : null;
+                $villageId      = $defaultVillage ? $defaultVillage->id : null;
             }
 
-            if (!$villageId) {
+            if (! $villageId) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No active village available',
@@ -141,22 +140,22 @@ class TwilioStudioController extends Controller
             }
 
             $user = User::create([
-                'name' => ucwords(strtolower($validated['name'])),
-                'phone' => $phone,
-                'village_id' => $villageId,
-                'source_type' => $validated['source_type'],
-                'source_detail' => $validated['source_detail'],
-                'scan_timestamp' => $validated['timestamp'] ?? now(),
+                'name'                => ucwords(strtolower($validated['name'])),
+                'phone'               => $phone,
+                'village_id'          => $villageId,
+                'source_type'         => $validated['source_type'],
+                'source_detail'       => $validated['source_detail'],
+                'scan_timestamp'      => $validated['timestamp'] ?? now(),
                 'registration_status' => 'INSCRIT',
-                'opted_in_at' => now(),
-                'is_active' => true,
+                'opted_in_at'         => now(),
+                'is_active'           => true,
             ]);
 
             Log::info('Twilio Studio - New user registered', [
-                'user_id' => $user->id,
-                'phone' => $phone,
+                'user_id'    => $user->id,
+                'phone'      => $phone,
                 'village_id' => $villageId,
-                'source' => $validated['source_type'] . ' / ' . $validated['source_detail'],
+                'source'     => $validated['source_type'] . ' / ' . $validated['source_detail'],
             ]);
         }
 
@@ -164,8 +163,8 @@ class TwilioStudioController extends Controller
         $session = ConversationSession::where('phone', $phone)->first();
         if ($session) {
             $session->update([
-                'state' => ConversationSession::STATE_REGISTERED,
-                'user_id' => $user->id,
+                'state'         => ConversationSession::STATE_REGISTERED,
+                'user_id'       => $user->id,
                 'last_activity' => now(),
             ]);
         }
@@ -174,7 +173,7 @@ class TwilioStudioController extends Controller
             'success' => true,
             'message' => 'User registered successfully',
             'user_id' => $user->id,
-            'name' => $user->name,
+            'name'    => $user->name,
         ]);
     }
 
@@ -185,8 +184,8 @@ class TwilioStudioController extends Controller
     public function refus(Request $request)
     {
         $validated = $request->validate([
-            'phone' => 'required|string',
-            'status' => 'nullable|string',
+            'phone'     => 'required|string',
+            'status'    => 'nullable|string',
             'timestamp' => 'nullable|string',
         ]);
 
@@ -195,7 +194,7 @@ class TwilioStudioController extends Controller
         $session = ConversationSession::where('phone', $phone)->first();
         if ($session) {
             $session->update([
-                'state' => ConversationSession::STATE_REFUS,
+                'state'         => ConversationSession::STATE_REFUS,
                 'last_activity' => now(),
             ]);
         }
@@ -215,8 +214,8 @@ class TwilioStudioController extends Controller
     public function stop(Request $request)
     {
         $validated = $request->validate([
-            'phone' => 'required|string',
-            'status' => 'nullable|string',
+            'phone'     => 'required|string',
+            'status'    => 'nullable|string',
             'timestamp' => 'nullable|string',
         ]);
 
@@ -226,7 +225,7 @@ class TwilioStudioController extends Controller
         $user = User::where('phone', $phone)->first();
         if ($user) {
             $user->update([
-                'is_active' => false,
+                'is_active'           => false,
                 'registration_status' => 'STOP',
             ]);
         }
@@ -234,7 +233,7 @@ class TwilioStudioController extends Controller
         $session = ConversationSession::where('phone', $phone)->first();
         if ($session) {
             $session->update([
-                'state' => ConversationSession::STATE_STOP,
+                'state'         => ConversationSession::STATE_STOP,
                 'last_activity' => now(),
             ]);
         }
@@ -254,8 +253,8 @@ class TwilioStudioController extends Controller
     public function abandon(Request $request)
     {
         $validated = $request->validate([
-            'phone' => 'required|string',
-            'status' => 'nullable|string',
+            'phone'     => 'required|string',
+            'status'    => 'nullable|string',
             'timestamp' => 'nullable|string',
         ]);
 
@@ -264,7 +263,7 @@ class TwilioStudioController extends Controller
         $session = ConversationSession::where('phone', $phone)->first();
         if ($session) {
             $session->update([
-                'state' => ConversationSession::STATE_ABANDON,
+                'state'         => ConversationSession::STATE_ABANDON,
                 'last_activity' => now(),
             ]);
         }
@@ -284,8 +283,8 @@ class TwilioStudioController extends Controller
     public function timeout(Request $request)
     {
         $validated = $request->validate([
-            'phone' => 'required|string',
-            'status' => 'nullable|string',
+            'phone'     => 'required|string',
+            'status'    => 'nullable|string',
             'timestamp' => 'nullable|string',
         ]);
 
@@ -294,13 +293,13 @@ class TwilioStudioController extends Controller
         $session = ConversationSession::where('phone', $phone)->first();
         if ($session) {
             $session->update([
-                'state' => ConversationSession::STATE_TIMEOUT,
+                'state'         => ConversationSession::STATE_TIMEOUT,
                 'last_activity' => now(),
             ]);
         }
 
         Log::info('Twilio Studio - Timeout', [
-            'phone' => $phone,
+            'phone'  => $phone,
             'status' => $validated['status'] ?? 'UNKNOWN',
         ]);
 
@@ -317,15 +316,15 @@ class TwilioStudioController extends Controller
     public function error(Request $request)
     {
         $validated = $request->validate([
-            'phone' => 'required|string',
-            'status' => 'nullable|string',
+            'phone'     => 'required|string',
+            'status'    => 'nullable|string',
             'timestamp' => 'nullable|string',
         ]);
 
         $phone = $this->formatPhone($validated['phone']);
 
         Log::error('Twilio Studio - Delivery error', [
-            'phone' => $phone,
+            'phone'  => $phone,
             'status' => $validated['status'] ?? 'DELIVERY_FAILED',
         ]);
 
@@ -346,25 +345,86 @@ class TwilioStudioController extends Controller
         ]);
 
         $phone = $this->formatPhone($validated['phone']);
-        $user = User::where('phone', $phone)->where('is_active', true)->first();
+
+        // Chercher l'utilisateur (actif ou non)
+        $user = User::where('phone', $phone)->first();
+
+        // Pas trouvé → nouveau utilisateur
+        if (! $user) {
+            return response()->json([
+                'status' => 'NOT_FOUND',
+            ]);
+        }
+
+        // Utilisateur STOP ou inactif → proposer réactivation
+        if (! $user->is_active || $user->registration_status === 'STOP') {
+            return response()->json([
+                'status' => 'STOP',
+                'name'   => $user->name,
+                'phone'  => $user->phone,
+            ]);
+        }
+
+        // Utilisateur déjà inscrit et actif
+        return response()->json([
+            'status' => 'INSCRIT',
+            'name'   => $user->name,
+            'phone'  => $user->phone,
+        ]);
+    }
+
+    /**
+     * Endpoint: POST /api/can/reactivate
+     * Réactiver un utilisateur STOP
+     */
+    public function reactivate(Request $request)
+    {
+        $validated = $request->validate([
+            'phone'     => 'required|string',
+            'status'    => 'nullable|string',
+            'timestamp' => 'nullable|string',
+        ]);
+
+        $phone = $this->formatPhone($validated['phone']);
+        $user  = User::where('phone', $phone)->first();
 
         if ($user) {
-            return response()->json([
-                'success' => true,
-                'user_exists' => true,
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'phone' => $user->phone,
-                    'village_id' => $user->village_id,
-                    'village_name' => $user->village?->name ?? 'N/A',
-                ],
+            $user->update([
+                'is_active'           => true,
+                'registration_status' => 'REACTIVATED',
+                'opted_in_at'         => now(),
             ]);
         }
 
         return response()->json([
             'success' => true,
-            'user_exists' => false,
+            'message' => 'User reactivated successfully',
+            'name'    => $user?->name,
+        ]);
+    }
+
+    /**
+     * Endpoint: POST /api/can/log
+     * Log générique
+     */
+    public function log(Request $request)
+    {
+        $validated = $request->validate([
+            'phone'     => 'required|string',
+            'status'    => 'required|string',
+            'timestamp' => 'nullable|string',
+        ]);
+
+        $phone = $this->formatPhone($validated['phone']);
+
+        Log::info('Twilio Studio - Event logged', [
+            'phone'  => $phone,
+            'status' => $validated['status'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Event logged successfully',
         ]);
     }
 
@@ -381,29 +441,29 @@ class TwilioStudioController extends Controller
 
         if ($villages->isEmpty()) {
             return response()->json([
-                'success' => true,
+                'success'      => true,
                 'has_villages' => false,
-                'message' => 'Aucun village disponible pour le moment.',
-                'villages' => [],
+                'message'      => 'Aucun village disponible pour le moment.',
+                'villages'     => [],
             ]);
         }
 
         $formattedVillages = $villages->map(function ($village, $index) {
             return [
-                'id' => $village->id,
-                'number' => $index + 1,
-                'name' => $village->name,
-                'address' => $village->address,
-                'capacity' => $village->capacity,
+                'id'            => $village->id,
+                'number'        => $index + 1,
+                'name'          => $village->name,
+                'address'       => $village->address,
+                'capacity'      => $village->capacity,
                 'members_count' => $village->users_count,
             ];
         });
 
         return response()->json([
-            'success' => true,
+            'success'      => true,
             'has_villages' => true,
-            'count' => $villages->count(),
-            'villages' => $formattedVillages,
+            'count'        => $villages->count(),
+            'villages'     => $formattedVillages,
         ]);
     }
 
@@ -413,7 +473,7 @@ class TwilioStudioController extends Controller
      */
     public function getMatchesToday(Request $request)
     {
-        $today = now()->startOfDay();
+        $today    = now()->startOfDay();
         $endOfDay = now()->endOfDay();
 
         $matches = FootballMatch::whereBetween('match_date', [$today, $endOfDay])
@@ -424,29 +484,29 @@ class TwilioStudioController extends Controller
 
         if ($matches->isEmpty()) {
             return response()->json([
-                'success' => true,
+                'success'     => true,
                 'has_matches' => false,
-                'message' => 'Aucun match disponible aujourd\'hui.',
-                'matches' => [],
+                'message'     => 'Aucun match disponible aujourd\'hui.',
+                'matches'     => [],
             ]);
         }
 
         $formattedMatches = $matches->map(function ($match, $index) {
             return [
-                'id' => $match->id,
-                'number' => $index + 1,
-                'team_a' => $match->team_a,
-                'team_b' => $match->team_b,
+                'id'         => $match->id,
+                'number'     => $index + 1,
+                'team_a'     => $match->team_a,
+                'team_b'     => $match->team_b,
                 'match_time' => $match->match_date->format('H:i'),
-                'status' => $match->status,
+                'status'     => $match->status,
             ];
         });
 
         return response()->json([
-            'success' => true,
+            'success'     => true,
             'has_matches' => true,
-            'count' => $matches->count(),
-            'matches' => $formattedMatches,
+            'count'       => $matches->count(),
+            'matches'     => $formattedMatches,
         ]);
     }
 
@@ -457,16 +517,16 @@ class TwilioStudioController extends Controller
     public function savePronostic(Request $request)
     {
         $validated = $request->validate([
-            'phone' => 'required|string',
+            'phone'    => 'required|string',
             'match_id' => 'required|integer|exists:matches,id',
-            'score_a' => 'required|integer|min:0|max:20',
-            'score_b' => 'required|integer|min:0|max:20',
+            'score_a'  => 'required|integer|min:0|max:20',
+            'score_b'  => 'required|integer|min:0|max:20',
         ]);
 
         $phone = $this->formatPhone($validated['phone']);
-        $user = User::where('phone', $phone)->where('is_active', true)->first();
+        $user  = User::where('phone', $phone)->where('is_active', true)->first();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Utilisateur non trouvé. Veuillez vous inscrire d\'abord.',
@@ -476,7 +536,7 @@ class TwilioStudioController extends Controller
         $match = FootballMatch::find($validated['match_id']);
 
         // Vérifier si le match accepte encore les pronostics
-        if (!Pronostic::canBet($match)) {
+        if (! Pronostic::canBet($match)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Ce match n\'accepte plus de pronostics.',
@@ -492,16 +552,16 @@ class TwilioStudioController extends Controller
         );
 
         Log::info('Twilio Studio - Pronostic saved', [
-            'user_id' => $user->id,
-            'match_id' => $match->id,
+            'user_id'    => $user->id,
+            'match_id'   => $match->id,
             'prediction' => "{$validated['score_a']} - {$validated['score_b']}",
         ]);
 
         return response()->json([
-            'success' => true,
-            'message' => 'Pronostic enregistré avec succès !',
+            'success'   => true,
+            'message'   => 'Pronostic enregistré avec succès !',
             'pronostic' => [
-                'id' => $pronostic->id,
+                'id'    => $pronostic->id,
                 'match' => "{$match->team_a} vs {$match->team_b}",
                 'prediction' => "{$validated['score_a']} - {$validated['score_b']}",
             ],
@@ -519,17 +579,17 @@ class TwilioStudioController extends Controller
         ]);
 
         $phone = $this->formatPhone($validated['phone']);
-        $user = User::where('phone', $phone)->first();
+        $user  = User::where('phone', $phone)->first();
 
         if ($user) {
             $user->update([
-                'is_active' => false,
+                'is_active'           => false,
                 'registration_status' => 'UNSUBSCRIBED',
             ]);
 
             Log::info('Twilio Studio - User unsubscribed', [
                 'user_id' => $user->id,
-                'phone' => $phone,
+                'phone'   => $phone,
             ]);
 
             return response()->json([
@@ -557,27 +617,27 @@ class TwilioStudioController extends Controller
 
         if ($partners->isEmpty()) {
             return response()->json([
-                'success' => true,
+                'success'      => true,
                 'has_partners' => false,
-                'message' => 'Aucun partenaire disponible pour le moment.',
-                'partners' => [],
+                'message'      => 'Aucun partenaire disponible pour le moment.',
+                'partners'     => [],
             ]);
         }
 
         $formattedPartners = $partners->map(function ($partner, $index) {
             return [
-                'id' => $partner->id,
-                'number' => $index + 1,
-                'name' => $partner->name,
+                'id'      => $partner->id,
+                'number'  => $index + 1,
+                'name'    => $partner->name,
                 'village' => $partner->village?->name ?? 'N/A',
             ];
         });
 
         return response()->json([
-            'success' => true,
+            'success'      => true,
             'has_partners' => true,
-            'count' => $partners->count(),
-            'partners' => $formattedPartners,
+            'count'        => $partners->count(),
+            'partners'     => $formattedPartners,
         ]);
     }
 
@@ -595,29 +655,29 @@ class TwilioStudioController extends Controller
 
         if ($prizes->isEmpty()) {
             return response()->json([
-                'success' => true,
+                'success'    => true,
                 'has_prizes' => false,
-                'message' => 'Aucun lot disponible pour le moment.',
-                'prizes' => [],
+                'message'    => 'Aucun lot disponible pour le moment.',
+                'prizes'     => [],
             ]);
         }
 
         $formattedPrizes = $prizes->map(function ($prize, $index) {
             return [
-                'id' => $prize->id,
-                'number' => $index + 1,
-                'name' => $prize->name,
+                'id'          => $prize->id,
+                'number'      => $index + 1,
+                'name'        => $prize->name,
                 'description' => $prize->description,
-                'partner' => $prize->partner?->name ?? 'N/A',
-                'remaining' => $prize->remaining,
+                'partner'     => $prize->partner?->name ?? 'N/A',
+                'remaining'   => $prize->remaining,
             ];
         });
 
         return response()->json([
-            'success' => true,
+            'success'    => true,
             'has_prizes' => true,
-            'count' => $prizes->count(),
-            'prizes' => $formattedPrizes,
+            'count'      => $prizes->count(),
+            'prizes'     => $formattedPrizes,
         ]);
     }
 
@@ -634,7 +694,7 @@ class TwilioStudioController extends Controller
             $village = Village::where('is_active', true)
                 ->where(function ($query) use ($villageName) {
                     $query->where('name', 'LIKE', "%{$villageName}%")
-                          ->orWhereRaw('UPPER(name) = ?', [strtoupper($villageName)]);
+                        ->orWhereRaw('UPPER(name) = ?', [strtoupper($villageName)]);
                 })
                 ->first();
 
@@ -659,7 +719,7 @@ class TwilioStudioController extends Controller
         $phone = preg_replace('/[^0-9+]/', '', $phone);
 
         // Ajouter + si absent
-        if (!str_starts_with($phone, '+')) {
+        if (! str_starts_with($phone, '+')) {
             $phone = '+' . $phone;
         }
 

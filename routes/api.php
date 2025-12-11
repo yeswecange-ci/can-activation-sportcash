@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\Api\WhatsAppWebhookController;
 use App\Http\Controllers\Api\TwilioStudioController;
 use App\Http\Controllers\Api\TwilioWebhookController;
+use App\Http\Controllers\Api\WhatsAppWebhookController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -36,6 +36,8 @@ Route::prefix('can')->group(function () {
     Route::post('/abandon', [TwilioStudioController::class, 'abandon'])->name('api.can.abandon');
     Route::post('/timeout', [TwilioStudioController::class, 'timeout'])->name('api.can.timeout');
     Route::post('/error', [TwilioStudioController::class, 'error'])->name('api.can.error');
+    Route::post('/can/reactivate', [TwilioStudioController::class, 'reactivate']);
+    Route::post('/can/log', [TwilioStudioController::class, 'log']);
 
     // Nouvelles API pour le flow interactif
     Route::post('/check-user', [TwilioStudioController::class, 'checkUser'])->name('api.can.check-user');
