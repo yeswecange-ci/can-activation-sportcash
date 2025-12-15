@@ -45,14 +45,14 @@
         </a> --}}
 
         <!-- Matchs -->
-        {{-- <a href="{{ route('admin.matches.index') }}"
+        <a href="{{ route('admin.matches.index') }}"
             class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-all rounded-lg group {{ request()->routeIs('admin.matches.*') ? 'bg-gradient-to-r from-orange-600 to-orange-700 text-white shadow-lg' : '' }}">
             <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.matches.*') ? 'text-white' : 'text-gray-400 group-hover:text-orange-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
             </svg>
             <span class="font-medium">Matchs</span>
-        </a> --}}
+        </a>
 
         <!-- Joueurs -->
         <a href="{{ route('admin.users.index') }}"
@@ -121,7 +121,7 @@
         </a> --}}
 
         <!-- Campaigns (Push) -->
-        {{-- <a href="{{ route('admin.campaigns.index') }}"
+        <a href="{{ route('admin.campaigns.index') }}"
             class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-all rounded-lg group {{ request()->routeIs('admin.campaigns.*') ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg' : '' }}">
             <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.campaigns.*') ? 'text-white' : 'text-gray-400 group-hover:text-red-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -129,7 +129,7 @@
                 </path>
             </svg>
             <span class="font-medium">Campagnes</span>
-        </a> --}}
+        </a>
 
         <!-- Analytics -->
         <a href="{{ route('admin.analytics') }}"
