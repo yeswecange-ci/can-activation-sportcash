@@ -79,9 +79,15 @@ class WhatsAppService
         } catch (\Exception $e) {
             Log::error('WhatsApp send error: ' . $e->getMessage(), [
                 'to' => $to,
-                'message' => $message
+                'message' => $message,
+                'error_code' => $e->getCode()
             ]);
-            return false;
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+                'error_code' => $e->getCode()
+            ];
         }
     }
 

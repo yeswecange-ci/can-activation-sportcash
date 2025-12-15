@@ -73,11 +73,10 @@ class CampaignController extends Controller
 
     public function show(Campaign $campaign)
     {
-        $campaign->load(['messages' => function($query) {
-            $query->latest()->limit(100);
-        }]);
+        // Rafraîchir la campagne depuis la base de données
+        $campaign->refresh();
 
-        // Stats de la campagne
+        // Stats de la campagne (directement depuis la base de données)
         $stats = [
             'total' => $campaign->messages()->count(),
             'sent' => $campaign->messages()->where('status', 'sent')->count(),
@@ -91,9 +90,20 @@ class CampaignController extends Controller
             ->where('status', 'failed')
             ->with('user')
             ->latest()
+            ->get()
+            ->map(function($message) {
+                $message->readable_error = $this->formatTwilioError($message->error_message);
+                return $message;
+            });
+
+        // Charger les derniers messages (pour debug/affichage)
+        $recentMessages = $campaign->messages()
+            ->with('user')
+            ->latest()
+            ->limit(100)
             ->get();
 
-        return view('admin.campaigns.show', compact('campaign', 'stats', 'failedMessages'));
+        return view('admin.campaigns.show', compact('campaign', 'stats', 'failedMessages', 'recentMessages'));
     }
 
     public function edit(Campaign $campaign)
@@ -397,6 +407,42 @@ class CampaignController extends Controller
         }
 
         return $this->personalizeMessage($message, $user);
+    }
+
+    /**
+     * Formater les codes d'erreur Twilio en messages lisibles
+     */
+    protected function formatTwilioError(?string $errorMessage): string
+    {
+        if (empty($errorMessage)) {
+            return 'Erreur inconnue';
+        }
+
+        // Mapping des codes d'erreur Twilio courants
+        $errorMappings = [
+            '63016' => 'Numéro WhatsApp invalide - Le numéro n\'est pas enregistré sur WhatsApp',
+            '63015' => 'Numéro de téléphone invalide',
+            '63003' => 'Pas de canal WhatsApp disponible',
+            '21211' => 'Numéro de téléphone invalide',
+            '21614' => 'Numéro \'To\' WhatsApp invalide',
+            '21408' => 'Permission refusée pour envoyer au numéro de destination',
+            '30007' => 'Message filtré - Spam détecté',
+            '30008' => 'Numéro inconnu - Pas d\'abonnement WhatsApp',
+            '30009' => 'Compte absent du réseau',
+        ];
+
+        // Extraire le code d'erreur (format: "Error code: XXXXX" ou juste "XXXXX")
+        preg_match('/(?:Error code:\s*)?(\d{5})/', $errorMessage, $matches);
+
+        if (!empty($matches[1])) {
+            $errorCode = $matches[1];
+            if (isset($errorMappings[$errorCode])) {
+                return $errorMappings[$errorCode] . " (Code: {$errorCode})";
+            }
+            return "Erreur Twilio (Code: {$errorCode})";
+        }
+
+        return $errorMessage;
     }
 
     /**

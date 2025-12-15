@@ -23,10 +23,10 @@
         </div>
 
         <!-- Statut & Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-            <div class="bg-white shadow rounded-lg p-6">
-                <div class="text-sm font-medium text-gray-500">Statut</div>
-                <div class="mt-2">
+        <div class="bg-white shadow rounded-lg p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">Statistiques d'envoi</h2>
+                <div>
                     @if($campaign->status === 'draft')
                         <span class="px-3 py-1 text-sm font-semibold text-gray-700 bg-gray-200 rounded-full">Brouillon</span>
                     @elseif($campaign->status === 'scheduled')
@@ -39,25 +39,62 @@
                 </div>
             </div>
 
-            <div class="bg-white shadow rounded-lg p-6">
-                <div class="text-sm font-medium text-gray-500">Total</div>
-                <div class="mt-2 text-2xl font-bold text-gray-900">{{ number_format($stats['total']) }}</div>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <div class="text-xs font-medium text-gray-500 uppercase mb-1">Total</div>
+                    <div class="text-2xl font-bold text-gray-900">{{ number_format($stats['total']) }}</div>
+                </div>
+
+                <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                    <div class="text-xs font-medium text-blue-600 uppercase mb-1">Envoyés</div>
+                    <div class="text-2xl font-bold text-blue-600">{{ number_format($stats['sent']) }}</div>
+                    @if($stats['total'] > 0)
+                        <div class="text-xs text-blue-500 mt-1">{{ round(($stats['sent'] / $stats['total']) * 100, 1) }}%</div>
+                    @endif
+                </div>
+
+                <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+                    <div class="text-xs font-medium text-green-600 uppercase mb-1">Délivrés</div>
+                    <div class="text-2xl font-bold text-green-600">{{ number_format($stats['delivered']) }}</div>
+                    @if($stats['total'] > 0)
+                        <div class="text-xs text-green-500 mt-1">{{ round(($stats['delivered'] / $stats['total']) * 100, 1) }}%</div>
+                    @endif
+                </div>
+
+                <div class="bg-red-50 rounded-lg p-4 border border-red-200">
+                    <div class="text-xs font-medium text-red-600 uppercase mb-1">Échecs</div>
+                    <div class="text-2xl font-bold text-red-600">{{ number_format($stats['failed']) }}</div>
+                    @if($stats['total'] > 0)
+                        <div class="text-xs text-red-500 mt-1">{{ round(($stats['failed'] / $stats['total']) * 100, 1) }}%</div>
+                    @endif
+                </div>
+
+                <div class="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                    <div class="text-xs font-medium text-yellow-600 uppercase mb-1">En attente</div>
+                    <div class="text-2xl font-bold text-yellow-600">{{ number_format($stats['pending']) }}</div>
+                    @if($stats['total'] > 0)
+                        <div class="text-xs text-yellow-500 mt-1">{{ round(($stats['pending'] / $stats['total']) * 100, 1) }}%</div>
+                    @endif
+                </div>
             </div>
 
-            <div class="bg-white shadow rounded-lg p-6">
-                <div class="text-sm font-medium text-gray-500">Envoyés</div>
-                <div class="mt-2 text-2xl font-bold text-blue-600">{{ number_format($stats['sent']) }}</div>
-            </div>
-
-            <div class="bg-white shadow rounded-lg p-6">
-                <div class="text-sm font-medium text-gray-500">Délivrés</div>
-                <div class="mt-2 text-2xl font-bold text-green-600">{{ number_format($stats['delivered']) }}</div>
-            </div>
-
-            <div class="bg-white shadow rounded-lg p-6">
-                <div class="text-sm font-medium text-gray-500">Échecs</div>
-                <div class="mt-2 text-2xl font-bold text-red-600">{{ number_format($stats['failed']) }}</div>
-            </div>
+            @if($campaign->status === 'sent' && ($stats['sent'] + $stats['delivered'] + $stats['failed'] + $stats['pending']) > 0)
+                <div class="mt-4">
+                    <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
+                        <span>Progression</span>
+                        <span>{{ number_format($stats['sent'] + $stats['delivered'] + $stats['failed']) }} / {{ number_format($stats['total']) }}</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="h-2.5 rounded-full flex">
+                            @if($stats['total'] > 0)
+                                <div class="bg-green-600 h-2.5" style="width: {{ ($stats['delivered'] / $stats['total']) * 100 }}%"></div>
+                                <div class="bg-blue-600 h-2.5" style="width: {{ ($stats['sent'] / $stats['total']) * 100 }}%"></div>
+                                <div class="bg-red-600 h-2.5 rounded-r-full" style="width: {{ ($stats['failed'] / $stats['total']) * 100 }}%"></div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
 
         <!-- Détails -->
@@ -151,15 +188,18 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach($failedMessages as $failedMsg)
-                                <tr>
+                                <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {{ $failedMsg->user->name ?? 'N/A' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ $failedMsg->user->phone ?? 'N/A' }}
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-red-600">
-                                        {{ $failedMsg->error_message ?? 'Erreur inconnue' }}
+                                    <td class="px-6 py-4 text-sm">
+                                        <span class="text-red-600 font-medium">{{ $failedMsg->readable_error }}</span>
+                                        @if($failedMsg->error_message && $failedMsg->error_message !== $failedMsg->readable_error)
+                                            <div class="text-xs text-gray-400 mt-1">{{ $failedMsg->error_message }}</div>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ $failedMsg->updated_at->format('d/m/Y H:i') }}
