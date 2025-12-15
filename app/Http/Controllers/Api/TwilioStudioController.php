@@ -677,6 +677,14 @@ class TwilioStudioController extends Controller
      */
     public function savePronostic(Request $request)
     {
+        // LOG: Début de la requête
+        Log::info('=== DÉBUT savePronostic ===', [
+            'all_data' => $request->all(),
+            'method' => $request->method(),
+            'url' => $request->fullUrl(),
+            'headers' => $request->headers->all(),
+        ]);
+
         // Validation avec support des deux modes : scores OU type simple
         $validated = $request->validate([
             'phone'           => 'required|string',
@@ -685,6 +693,8 @@ class TwilioStudioController extends Controller
             'score_a'         => 'nullable|integer|min:0|max:20',
             'score_b'         => 'nullable|integer|min:0|max:20',
         ]);
+
+        Log::info('Validation passed', ['validated' => $validated]);
 
         $phone = $this->formatPhone($validated['phone']);
         $user  = User::where('phone', $phone)->where('is_active', true)->first();
@@ -769,6 +779,61 @@ class TwilioStudioController extends Controller
             'success' => false,
             'message' => 'Vous devez fournir soit prediction_type, soit score_a et score_b.',
         ], 400);
+    }
+
+    /**
+     * Endpoint: GET /api/can/pronostic/test
+     * Test de l'endpoint pronostic (pour debug)
+     */
+    public function testPronostic(Request $request)
+    {
+        // Récupérer un utilisateur actif
+        $user = User::where('is_active', true)->first();
+
+        if (!$user) {
+            return response()->json([
+                'error' => 'Aucun utilisateur actif trouvé',
+                'solution' => 'Créer un utilisateur via le flow d\'inscription'
+            ]);
+        }
+
+        // Récupérer un match disponible
+        $match = FootballMatch::where('pronostic_enabled', true)
+            ->where('status', 'scheduled')
+            ->first();
+
+        if (!$match) {
+            return response()->json([
+                'error' => 'Aucun match disponible',
+                'solution' => 'Créer un match avec pronostic_enabled=true et status=scheduled'
+            ]);
+        }
+
+        // Simuler la requête
+        $testRequest = new Request([
+            'phone' => $user->phone,
+            'match_id' => $match->id,
+            'prediction_type' => 'team_a_win'
+        ]);
+
+        // Appeler l'endpoint réel
+        $response = $this->savePronostic($testRequest);
+        $data = json_decode($response->getContent(), true);
+
+        return response()->json([
+            'test_success' => true,
+            'user_tested' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'phone' => $user->phone
+            ],
+            'match_tested' => [
+                'id' => $match->id,
+                'teams' => "{$match->team_a} vs {$match->team_b}"
+            ],
+            'api_response' => $data,
+            'instructions' => 'Si vous voyez ce message, l\'API fonctionne correctement depuis le navigateur'
+        ]);
     }
 
     /**
