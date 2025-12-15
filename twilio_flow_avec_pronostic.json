@@ -1,0 +1,1976 @@
+{
+  "description": "CAN 2025 Kinshasa - Phase 1 avec Anti-Doublon + Pronostic - PRODUCTION",
+  "states": [
+    {
+      "name": "Trigger",
+      "type": "trigger",
+      "transitions": [
+        {
+          "next": "set_phone",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "incomingCall"
+        },
+        {
+          "event": "incomingConversationMessage"
+        },
+        {
+          "event": "incomingRequest"
+        },
+        {
+          "event": "incomingParent"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -50,
+          "y": -500
+        }
+      }
+    },
+    {
+      "name": "set_phone",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "check_stop_keyword",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "{{trigger.message.From}}",
+            "key": "phone_number"
+          },
+          {
+            "type": "string",
+            "value": "{{trigger.message.Body}}",
+            "key": "user_message"
+          },
+          {
+            "type": "string",
+            "value": "{{now | date: '%Y-%m-%d %H:%M:%S'}}",
+            "key": "timestamp"
+          }
+        ],
+        "offset": {
+          "x": 90,
+          "y": -280
+        }
+      }
+    },
+    {
+      "name": "check_stop_keyword",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "next": "check_source",
+          "event": "noMatch"
+        },
+        {
+          "next": "http_log_stop",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "STOP demandé",
+              "arguments": [
+                "{{trigger.message.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "STOP,stop,Stop,ARRET,arret,Arret"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{trigger.message.Body}}",
+        "offset": {
+          "x": -40,
+          "y": -20
+        }
+      }
+    },
+    {
+      "name": "check_source",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "next": "set_source_direct",
+          "event": "noMatch"
+        },
+        {
+          "next": "set_source_affiche",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "Source Affiche",
+              "arguments": [
+                "{{trigger.message.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "START_AFF_GOMBE,START_AFF_MASINA,START_AFF_LEMBA,START_AFF_BANDAL,START_AFF_NGALI,START_AFF_MATETE,START_AFF_KINTAMBO,START_AFF_NDJILI,START_AFF_LIMETE"
+            }
+          ]
+        },
+        {
+          "next": "set_source_pdv",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "Source PDV",
+              "arguments": [
+                "{{trigger.message.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "START_PDV_BRACONGO,START_PDV_BAR1,START_PDV_BAR2,START_PDV_DEPOT1,START_PDV_DEPOT2"
+            }
+          ]
+        },
+        {
+          "next": "set_source_digital",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "Source Digital",
+              "arguments": [
+                "{{trigger.message.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "START_FB,START_IG,START_TIKTOK,START_WA_STATUS,START_WEB"
+            }
+          ]
+        },
+        {
+          "next": "set_source_flyer",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "Source Flyer",
+              "arguments": [
+                "{{trigger.message.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "START_FLYER_UNI,START_FLYER_RUE,START_FLYER_EVENT"
+            }
+          ]
+        },
+        {
+          "next": "set_source_radio",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "Source Radio",
+              "arguments": [
+                "{{trigger.message.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "START_RADIO,START_RTGA,START_RTNC"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{trigger.message.Body}}",
+        "offset": {
+          "x": -30,
+          "y": 190
+        }
+      }
+    },
+    {
+      "name": "set_source_affiche",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "http_check_user",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "AFFICHE",
+            "key": "source_type"
+          },
+          {
+            "type": "string",
+            "value": "{{trigger.message.Body | replace: 'START_AFF_', ''}}",
+            "key": "source_detail"
+          }
+        ],
+        "offset": {
+          "x": -800,
+          "y": 450
+        }
+      }
+    },
+    {
+      "name": "set_source_pdv",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "http_check_user",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "PDV_BRACONGO",
+            "key": "source_type"
+          },
+          {
+            "type": "string",
+            "value": "{{trigger.message.Body | replace: 'START_PDV_', ''}}",
+            "key": "source_detail"
+          }
+        ],
+        "offset": {
+          "x": -400,
+          "y": 450
+        }
+      }
+    },
+    {
+      "name": "set_source_digital",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "http_check_user",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "DIGITAL",
+            "key": "source_type"
+          },
+          {
+            "type": "string",
+            "value": "{{trigger.message.Body | replace: 'START_', ''}}",
+            "key": "source_detail"
+          }
+        ],
+        "offset": {
+          "x": 0,
+          "y": 450
+        }
+      }
+    },
+    {
+      "name": "set_source_flyer",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "http_check_user",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "FLYER",
+            "key": "source_type"
+          },
+          {
+            "type": "string",
+            "value": "{{trigger.message.Body | replace: 'START_FLYER_', ''}}",
+            "key": "source_detail"
+          }
+        ],
+        "offset": {
+          "x": 400,
+          "y": 450
+        }
+      }
+    },
+    {
+      "name": "set_source_radio",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "http_check_user",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "RADIO",
+            "key": "source_type"
+          },
+          {
+            "type": "string",
+            "value": "{{trigger.message.Body | replace: 'START_', '' | replace: 'RADIO_', ''}}",
+            "key": "source_detail"
+          }
+        ],
+        "offset": {
+          "x": 800,
+          "y": 450
+        }
+      }
+    },
+    {
+      "name": "set_source_direct",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "http_check_user",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "DIRECT",
+            "key": "source_type"
+          },
+          {
+            "type": "string",
+            "value": "SANS_QR",
+            "key": "source_detail"
+          }
+        ],
+        "offset": {
+          "x": 1200,
+          "y": 450
+        }
+      }
+    },
+    {
+      "name": "http_check_user",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "check_user_status",
+          "event": "success"
+        },
+        {
+          "next": "http_log_scan",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 0,
+          "y": 700
+        },
+        "method": "POST",
+        "content_type": "application/json",
+        "add_twilio_auth": false,
+        "body": "{\"phone\": \"{{flow.variables.phone_number}}\"}",
+        "url": "https://can-wabracongo.ywcdigital.com/api/can/check-user"
+      }
+    },
+    {
+      "name": "check_user_status",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "next": "http_log_scan",
+          "event": "noMatch"
+        },
+        {
+          "next": "http_log_scan",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "Nouvel utilisateur",
+              "arguments": [
+                "{{widgets.http_check_user.parsed.status}}"
+              ],
+              "type": "equal_to",
+              "value": "NOT_FOUND"
+            }
+          ]
+        },
+        {
+          "next": "msg_deja_inscrit",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "Déjà inscrit",
+              "arguments": [
+                "{{widgets.http_check_user.parsed.status}}"
+              ],
+              "type": "equal_to",
+              "value": "INSCRIT"
+            }
+          ]
+        },
+        {
+          "next": "msg_reactivation",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "Ancien STOP",
+              "arguments": [
+                "{{widgets.http_check_user.parsed.status}}"
+              ],
+              "type": "equal_to",
+              "value": "STOP"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.http_check_user.parsed.status}}",
+        "offset": {
+          "x": 0,
+          "y": 920
+        }
+      }
+    },
+    {
+      "name": "msg_deja_inscrit",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "http_log_already_registered",
+          "event": "sent"
+        },
+        {
+          "next": "end_deja_inscrit",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 600,
+          "y": 1150
+        },
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "Salut {{widgets.http_check_user.parsed.name}} ! Tu es déjà inscrit à BRACONGO FOOT 2025. On t'envoie bientôt les infos. Tape STOP pour te désinscrire."
+      }
+    },
+    {
+      "name": "http_log_already_registered",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "end_deja_inscrit",
+          "event": "success"
+        },
+        {
+          "next": "end_deja_inscrit",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 600,
+          "y": 1400
+        },
+        "method": "POST",
+        "content_type": "application/json",
+        "add_twilio_auth": false,
+        "body": "{\"phone\": \"{{flow.variables.phone_number}}\", \"status\": \"ALREADY_REGISTERED\", \"timestamp\": \"{{flow.variables.timestamp}}\"}",
+        "url": "https://can-wabracongo.ywcdigital.com/api/can/log"
+      }
+    },
+    {
+      "name": "msg_reactivation",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "check_reactivation",
+          "event": "incomingMessage"
+        },
+        {
+          "next": "end_timeout",
+          "event": "timeout"
+        },
+        {
+          "next": "end_error",
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 1100,
+          "y": 1150
+        },
+        "from": "{{flow.channel.address}}",
+        "body": "Salut {{widgets.http_check_user.parsed.name}} ! Tu veux te réinscrire ? Tape OUI pour revenir ou NON pour rester désinscrit.",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "check_reactivation",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "next": "msg_reste_stop",
+          "event": "noMatch"
+        },
+        {
+          "next": "http_log_reactivate",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "OUI réactivation",
+              "arguments": [
+                "{{widgets.msg_reactivation.inbound.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "OUI,oui,Oui,O,o,YES,yes,Yes,OK,ok,Ok,1"
+            }
+          ]
+        },
+        {
+          "next": "msg_reste_stop",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "NON reste stop",
+              "arguments": [
+                "{{widgets.msg_reactivation.inbound.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "NON,non,Non,N,n,NO,no,No,0,STOP,stop,Stop"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.msg_reactivation.inbound.Body}}",
+        "offset": {
+          "x": 1100,
+          "y": 1450
+        }
+      }
+    },
+    {
+      "name": "http_log_reactivate",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "msg_reactivation_ok",
+          "event": "success"
+        },
+        {
+          "next": "msg_reactivation_ok",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 1100,
+          "y": 1700
+        },
+        "method": "POST",
+        "content_type": "application/json",
+        "add_twilio_auth": false,
+        "body": "{\"phone\": \"{{flow.variables.phone_number}}\", \"status\": \"REACTIVATED\", \"timestamp\": \"{{flow.variables.timestamp}}\"}",
+        "url": "https://can-wabracongo.ywcdigital.com/api/can/reactivate"
+      }
+    },
+    {
+      "name": "msg_reactivation_ok",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "end_reactivated",
+          "event": "sent"
+        },
+        {
+          "next": "end_reactivated",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 1100,
+          "y": 1950
+        },
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "Content de te revoir {{widgets.http_check_user.parsed.name}} ! Tu es de retour dans BRACONGO FOOT 2025. Tape STOP pour te désinscrire."
+      }
+    },
+    {
+      "name": "msg_reste_stop",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "end_stop",
+          "event": "sent"
+        },
+        {
+          "next": "end_stop",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 1500,
+          "y": 1700
+        },
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "OK, pas de souci ! Tu restes désinscrit. Si tu changes d'avis, envoie-nous un message."
+      }
+    },
+    {
+      "name": "http_log_scan",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "msg_accueil",
+          "event": "success"
+        },
+        {
+          "next": "msg_accueil",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -400,
+          "y": 1150
+        },
+        "method": "POST",
+        "content_type": "application/json",
+        "add_twilio_auth": false,
+        "body": "{\"phone\": \"{{flow.variables.phone_number}}\", \"source_type\": \"{{flow.variables.source_type}}\", \"source_detail\": \"{{flow.variables.source_detail}}\", \"timestamp\": \"{{flow.variables.timestamp}}\", \"status\": \"SCAN\"}",
+        "url": "https://can-wabracongo.ywcdigital.com/api/can/scan"
+      }
+    },
+    {
+      "name": "msg_accueil",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "check_optin",
+          "event": "incomingMessage"
+        },
+        {
+          "next": "http_log_timeout",
+          "event": "timeout"
+        },
+        {
+          "next": "http_log_error",
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -400,
+          "y": 1400
+        },
+        "from": "{{flow.channel.address}}",
+        "body": "BRACONGO FOOT 2025 - Mbote supporter ! Bracongo t'invite dans ses Villages foot. Confirme que tu as 18 ans ou plus et que tu acceptes nos messages. Tape OUI pour t'inscrire.",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "check_optin",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "next": "msg_relance_optin",
+          "event": "noMatch"
+        },
+        {
+          "next": "http_log_optin",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "OUI accepté",
+              "arguments": [
+                "{{widgets.msg_accueil.inbound.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "OUI,oui,Oui,O,o,YES,yes,Yes,OK,ok,Ok,1"
+            }
+          ]
+        },
+        {
+          "next": "http_log_refus",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "NON refusé",
+              "arguments": [
+                "{{widgets.msg_accueil.inbound.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "NON,non,Non,N,n,NO,no,No,0"
+            }
+          ]
+        },
+        {
+          "next": "http_log_stop",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "STOP demandé",
+              "arguments": [
+                "{{widgets.msg_accueil.inbound.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "STOP,stop,Stop,ARRET,arret,Arret"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.msg_accueil.inbound.Body}}",
+        "offset": {
+          "x": -400,
+          "y": 1650
+        }
+      }
+    },
+    {
+      "name": "msg_relance_optin",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "check_optin_relance",
+          "event": "incomingMessage"
+        },
+        {
+          "next": "http_log_timeout",
+          "event": "timeout"
+        },
+        {
+          "next": "http_log_error",
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -900,
+          "y": 1900
+        },
+        "from": "{{flow.channel.address}}",
+        "body": "Je n'ai pas compris ! Pour t'inscrire à BRACONGO FOOT 2025, tape OUI pour confirmer ou NON pour refuser.",
+        "timeout": "1800"
+      }
+    },
+    {
+      "name": "check_optin_relance",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "next": "http_log_abandon",
+          "event": "noMatch"
+        },
+        {
+          "next": "http_log_optin",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "OUI accepté relance",
+              "arguments": [
+                "{{widgets.msg_relance_optin.inbound.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "OUI,oui,Oui,O,o,YES,yes,Yes,OK,ok,Ok,1"
+            }
+          ]
+        },
+        {
+          "next": "http_log_refus",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "NON refusé relance",
+              "arguments": [
+                "{{widgets.msg_relance_optin.inbound.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "NON,non,Non,N,n,NO,no,No,0,STOP,stop,Stop"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.msg_relance_optin.inbound.Body}}",
+        "offset": {
+          "x": -900,
+          "y": 2150
+        }
+      }
+    },
+    {
+      "name": "http_log_optin",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "msg_demande_nom",
+          "event": "success"
+        },
+        {
+          "next": "msg_demande_nom",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -400,
+          "y": 1900
+        },
+        "method": "POST",
+        "content_type": "application/json",
+        "add_twilio_auth": false,
+        "body": "{\"phone\": \"{{flow.variables.phone_number}}\", \"status\": \"OPTIN\", \"timestamp\": \"{{now | date: '%Y-%m-%d %H:%M:%S'}}\"}",
+        "url": "https://can-wabracongo.ywcdigital.com/api/can/optin"
+      }
+    },
+    {
+      "name": "msg_demande_nom",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "validate_nom",
+          "event": "incomingMessage"
+        },
+        {
+          "next": "http_log_timeout",
+          "event": "timeout"
+        },
+        {
+          "next": "http_log_error",
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -400,
+          "y": 2150
+        },
+        "from": "{{flow.channel.address}}",
+        "body": "Parfait ! Bienvenue dans la famille Bracongo ! C'est quoi ton nom ou pseudo ?",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "validate_nom",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "next": "set_nom",
+          "event": "noMatch"
+        },
+        {
+          "next": "msg_relance_nom",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "Nom trop court",
+              "arguments": [
+                "{{widgets.msg_demande_nom.inbound.Body}}"
+              ],
+              "type": "less_than",
+              "value": "2"
+            }
+          ]
+        },
+        {
+          "next": "http_log_stop",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "Stop demandé",
+              "arguments": [
+                "{{widgets.msg_demande_nom.inbound.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "STOP,stop,Stop,ARRET,arret,Arret"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.msg_demande_nom.inbound.Body}}",
+        "offset": {
+          "x": -400,
+          "y": 2400
+        }
+      }
+    },
+    {
+      "name": "msg_relance_nom",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "set_nom_relance",
+          "event": "incomingMessage"
+        },
+        {
+          "next": "http_log_timeout",
+          "event": "timeout"
+        },
+        {
+          "next": "http_log_error",
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -900,
+          "y": 2650
+        },
+        "from": "{{flow.channel.address}}",
+        "body": "Donne-moi au moins 2 lettres ! Ton prénom ou pseudo ?",
+        "timeout": "1800"
+      }
+    },
+    {
+      "name": "set_nom_relance",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "http_log_inscription",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "{{widgets.msg_relance_nom.inbound.Body | capitalize}}",
+            "key": "user_name"
+          }
+        ],
+        "offset": {
+          "x": -900,
+          "y": 2900
+        }
+      }
+    },
+    {
+      "name": "set_nom",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "http_log_inscription",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "{{widgets.msg_demande_nom.inbound.Body | capitalize}}",
+            "key": "user_name"
+          }
+        ],
+        "offset": {
+          "x": -400,
+          "y": 2650
+        }
+      }
+    },
+    {
+      "name": "http_log_inscription",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "msg_confirmation",
+          "event": "success"
+        },
+        {
+          "next": "msg_confirmation",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -400,
+          "y": 2900
+        },
+        "method": "POST",
+        "content_type": "application/json",
+        "add_twilio_auth": false,
+        "body": "{\"phone\": \"{{flow.variables.phone_number}}\", \"name\": \"{{flow.variables.user_name}}\", \"source_type\": \"{{flow.variables.source_type}}\", \"source_detail\": \"{{flow.variables.source_detail}}\", \"status\": \"INSCRIT\", \"timestamp\": \"{{now | date: '%Y-%m-%d %H:%M:%S'}}\"}",
+        "url": "https://can-wabracongo.ywcdigital.com/api/can/inscription"
+      }
+    },
+    {
+      "name": "msg_confirmation",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "http_get_matchs",
+          "event": "sent"
+        },
+        {
+          "next": "http_get_matchs",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -400,
+          "y": 3150
+        },
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "C'est bon {{flow.variables.user_name}} ! Tu fais partie de BRACONGO FOOT 2025 ! On t'envoie bientôt les Villages FOOT et les jeux. Tape STOP pour te désinscrire."
+      }
+    },
+    {
+      "name": "http_get_matchs",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "check_has_matchs",
+          "event": "success"
+        },
+        {
+          "next": "end_success",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -400,
+          "y": 3400
+        },
+        "method": "GET",
+        "content_type": "application/x-www-form-urlencoded",
+        "add_twilio_auth": false,
+        "url": "https://can-wabracongo.ywcdigital.com/api/can/matches/formatted?limit=5"
+      }
+    },
+    {
+      "name": "check_has_matchs",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "next": "end_success",
+          "event": "noMatch"
+        },
+        {
+          "next": "msg_liste_matchs",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "Des matchs disponibles",
+              "arguments": [
+                "{{widgets.http_get_matchs.parsed.has_matches}}"
+              ],
+              "type": "equal_to",
+              "value": "true"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.http_get_matchs.parsed.has_matches}}",
+        "offset": {
+          "x": -400,
+          "y": 3650
+        }
+      }
+    },
+    {
+      "name": "msg_liste_matchs",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "check_choix_match",
+          "event": "incomingMessage"
+        },
+        {
+          "next": "end_success",
+          "event": "timeout"
+        },
+        {
+          "next": "end_success",
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -400,
+          "y": 3900
+        },
+        "from": "{{flow.channel.address}}",
+        "body": "{{widgets.http_get_matchs.parsed.message}}",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "check_choix_match",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "next": "msg_choix_invalide",
+          "event": "noMatch"
+        },
+        {
+          "next": "set_match_1",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "Match 1",
+              "arguments": [
+                "{{widgets.msg_liste_matchs.inbound.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "next": "set_match_2",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "Match 2",
+              "arguments": [
+                "{{widgets.msg_liste_matchs.inbound.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "2"
+            }
+          ]
+        },
+        {
+          "next": "set_match_3",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "Match 3",
+              "arguments": [
+                "{{widgets.msg_liste_matchs.inbound.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "3"
+            }
+          ]
+        },
+        {
+          "next": "set_match_4",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "Match 4",
+              "arguments": [
+                "{{widgets.msg_liste_matchs.inbound.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "next": "set_match_5",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "Match 5",
+              "arguments": [
+                "{{widgets.msg_liste_matchs.inbound.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "5"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.msg_liste_matchs.inbound.Body}}",
+        "offset": {
+          "x": -400,
+          "y": 4150
+        }
+      }
+    },
+    {
+      "name": "set_match_1",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "msg_options_prono",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "{{widgets.http_get_matchs.parsed.matches[0].id}}",
+            "key": "selected_match_id"
+          },
+          {
+            "type": "string",
+            "value": "{{widgets.http_get_matchs.parsed.matches[0].team_a}}",
+            "key": "selected_team_a"
+          },
+          {
+            "type": "string",
+            "value": "{{widgets.http_get_matchs.parsed.matches[0].team_b}}",
+            "key": "selected_team_b"
+          }
+        ],
+        "offset": {
+          "x": -1200,
+          "y": 4400
+        }
+      }
+    },
+    {
+      "name": "set_match_2",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "msg_options_prono",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "{{widgets.http_get_matchs.parsed.matches[1].id}}",
+            "key": "selected_match_id"
+          },
+          {
+            "type": "string",
+            "value": "{{widgets.http_get_matchs.parsed.matches[1].team_a}}",
+            "key": "selected_team_a"
+          },
+          {
+            "type": "string",
+            "value": "{{widgets.http_get_matchs.parsed.matches[1].team_b}}",
+            "key": "selected_team_b"
+          }
+        ],
+        "offset": {
+          "x": -800,
+          "y": 4400
+        }
+      }
+    },
+    {
+      "name": "set_match_3",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "msg_options_prono",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "{{widgets.http_get_matchs.parsed.matches[2].id}}",
+            "key": "selected_match_id"
+          },
+          {
+            "type": "string",
+            "value": "{{widgets.http_get_matchs.parsed.matches[2].team_a}}",
+            "key": "selected_team_a"
+          },
+          {
+            "type": "string",
+            "value": "{{widgets.http_get_matchs.parsed.matches[2].team_b}}",
+            "key": "selected_team_b"
+          }
+        ],
+        "offset": {
+          "x": -400,
+          "y": 4400
+        }
+      }
+    },
+    {
+      "name": "set_match_4",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "msg_options_prono",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "{{widgets.http_get_matchs.parsed.matches[3].id}}",
+            "key": "selected_match_id"
+          },
+          {
+            "type": "string",
+            "value": "{{widgets.http_get_matchs.parsed.matches[3].team_a}}",
+            "key": "selected_team_a"
+          },
+          {
+            "type": "string",
+            "value": "{{widgets.http_get_matchs.parsed.matches[3].team_b}}",
+            "key": "selected_team_b"
+          }
+        ],
+        "offset": {
+          "x": 0,
+          "y": 4400
+        }
+      }
+    },
+    {
+      "name": "set_match_5",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "msg_options_prono",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "{{widgets.http_get_matchs.parsed.matches[4].id}}",
+            "key": "selected_match_id"
+          },
+          {
+            "type": "string",
+            "value": "{{widgets.http_get_matchs.parsed.matches[4].team_a}}",
+            "key": "selected_team_a"
+          },
+          {
+            "type": "string",
+            "value": "{{widgets.http_get_matchs.parsed.matches[4].team_b}}",
+            "key": "selected_team_b"
+          }
+        ],
+        "offset": {
+          "x": 400,
+          "y": 4400
+        }
+      }
+    },
+    {
+      "name": "msg_choix_invalide",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "end_success",
+          "event": "sent"
+        },
+        {
+          "next": "end_success",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 800,
+          "y": 4400
+        },
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "Choix invalide ! On se retrouve bientôt pour les prochains matchs !"
+      }
+    },
+    {
+      "name": "msg_options_prono",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "check_choix_prono",
+          "event": "incomingMessage"
+        },
+        {
+          "next": "end_success",
+          "event": "timeout"
+        },
+        {
+          "next": "end_success",
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -400,
+          "y": 4650
+        },
+        "from": "{{flow.channel.address}}",
+        "body": "TON PRONOSTIC - {{flow.variables.selected_team_a}} vs {{flow.variables.selected_team_b}} - Qui va gagner ? 1=Victoire {{flow.variables.selected_team_a}} 2=Victoire {{flow.variables.selected_team_b}} 3=Match nul - Envoie 1, 2 ou 3",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "check_choix_prono",
+      "type": "split-based-on",
+      "transitions": [
+        {
+          "next": "msg_prono_invalide",
+          "event": "noMatch"
+        },
+        {
+          "next": "set_prono_team_a",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "Victoire équipe A",
+              "arguments": [
+                "{{widgets.msg_options_prono.inbound.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "next": "set_prono_team_b",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "Victoire équipe B",
+              "arguments": [
+                "{{widgets.msg_options_prono.inbound.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "2"
+            }
+          ]
+        },
+        {
+          "next": "set_prono_draw",
+          "event": "match",
+          "conditions": [
+            {
+              "friendly_name": "Match nul",
+              "arguments": [
+                "{{widgets.msg_options_prono.inbound.Body}}"
+              ],
+              "type": "matches_any_of",
+              "value": "3"
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "input": "{{widgets.msg_options_prono.inbound.Body}}",
+        "offset": {
+          "x": -400,
+          "y": 4900
+        }
+      }
+    },
+    {
+      "name": "set_prono_team_a",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "http_save_prono",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "team_a_win",
+            "key": "prediction_type"
+          }
+        ],
+        "offset": {
+          "x": -800,
+          "y": 5150
+        }
+      }
+    },
+    {
+      "name": "set_prono_team_b",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "http_save_prono",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "team_b_win",
+            "key": "prediction_type"
+          }
+        ],
+        "offset": {
+          "x": -400,
+          "y": 5150
+        }
+      }
+    },
+    {
+      "name": "set_prono_draw",
+      "type": "set-variables",
+      "transitions": [
+        {
+          "next": "http_save_prono",
+          "event": "next"
+        }
+      ],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "draw",
+            "key": "prediction_type"
+          }
+        ],
+        "offset": {
+          "x": 0,
+          "y": 5150
+        }
+      }
+    },
+    {
+      "name": "msg_prono_invalide",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "end_success",
+          "event": "sent"
+        },
+        {
+          "next": "end_success",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 400,
+          "y": 5150
+        },
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "Choix invalide ! On se retrouve bientôt !"
+      }
+    },
+    {
+      "name": "http_save_prono",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "msg_confirmation_prono",
+          "event": "success"
+        },
+        {
+          "next": "msg_erreur_prono",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -400,
+          "y": 5400
+        },
+        "method": "POST",
+        "content_type": "application/x-www-form-urlencoded",
+        "add_twilio_auth": false,
+        "body": "phone={{flow.variables.phone_number}}&match_id={{flow.variables.selected_match_id}}&prediction_type={{flow.variables.prediction_type}}",
+        "url": "https://can-wabracongo.ywcdigital.com/api/can/pronostic"
+      }
+    },
+    {
+      "name": "msg_confirmation_prono",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "end_success",
+          "event": "sent"
+        },
+        {
+          "next": "end_success",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -400,
+          "y": 5650
+        },
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "{{widgets.http_save_prono.parsed.message}}"
+      }
+    },
+    {
+      "name": "msg_erreur_prono",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "end_success",
+          "event": "sent"
+        },
+        {
+          "next": "end_success",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 0,
+          "y": 5650
+        },
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "Une erreur s'est produite. Réessaye plus tard !"
+      }
+    },
+    {
+      "name": "http_log_refus",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "msg_refus",
+          "event": "success"
+        },
+        {
+          "next": "msg_refus",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 100,
+          "y": 1900
+        },
+        "method": "POST",
+        "content_type": "application/json",
+        "add_twilio_auth": false,
+        "body": "{\"phone\": \"{{flow.variables.phone_number}}\", \"status\": \"REFUS\", \"timestamp\": \"{{now | date: '%Y-%m-%d %H:%M:%S'}}\"}",
+        "url": "https://can-wabracongo.ywcdigital.com/api/can/refus"
+      }
+    },
+    {
+      "name": "msg_refus",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "end_refus",
+          "event": "sent"
+        },
+        {
+          "next": "end_refus",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 100,
+          "y": 2150
+        },
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "Pas de problème ! Si tu changes d'avis, reviens nous voir."
+      }
+    },
+    {
+      "name": "http_log_stop",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "msg_stop",
+          "event": "success"
+        },
+        {
+          "next": "msg_stop",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 740,
+          "y": 240
+        },
+        "method": "POST",
+        "content_type": "application/json",
+        "add_twilio_auth": false,
+        "body": "{\"phone\": \"{{flow.variables.phone_number}}\", \"status\": \"STOP\", \"timestamp\": \"{{now | date: '%Y-%m-%d %H:%M:%S'}}\"}",
+        "url": "https://can-wabracongo.ywcdigital.com/api/can/stop"
+      }
+    },
+    {
+      "name": "msg_stop",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "end_stop",
+          "event": "sent"
+        },
+        {
+          "next": "end_stop",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 500,
+          "y": 450
+        },
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "C'est noté. Tu es désinscrit et ne recevras plus de messages."
+      }
+    },
+    {
+      "name": "http_log_abandon",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "msg_abandon",
+          "event": "success"
+        },
+        {
+          "next": "msg_abandon",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -1300,
+          "y": 2400
+        },
+        "method": "POST",
+        "content_type": "application/json",
+        "add_twilio_auth": false,
+        "body": "{\"phone\": \"{{flow.variables.phone_number}}\", \"status\": \"ABANDON\", \"timestamp\": \"{{now | date: '%Y-%m-%d %H:%M:%S'}}\"}",
+        "url": "https://can-wabracongo.ywcdigital.com/api/can/abandon"
+      }
+    },
+    {
+      "name": "msg_abandon",
+      "type": "send-message",
+      "transitions": [
+        {
+          "next": "end_abandon",
+          "event": "sent"
+        },
+        {
+          "next": "end_abandon",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -1300,
+          "y": 2650
+        },
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "Pas de problème ! Si tu veux t'inscrire plus tard, envoie juste OUI."
+      }
+    },
+    {
+      "name": "http_log_timeout",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "end_timeout",
+          "event": "success"
+        },
+        {
+          "next": "end_timeout",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -1300,
+          "y": 1400
+        },
+        "method": "POST",
+        "content_type": "application/json",
+        "add_twilio_auth": false,
+        "body": "{\"phone\": \"{{flow.variables.phone_number}}\", \"status\": \"TIMEOUT\", \"timestamp\": \"{{now | date: '%Y-%m-%d %H:%M:%S'}}\"}",
+        "url": "https://can-wabracongo.ywcdigital.com/api/can/timeout"
+      }
+    },
+    {
+      "name": "http_log_error",
+      "type": "make-http-request",
+      "transitions": [
+        {
+          "next": "end_error",
+          "event": "success"
+        },
+        {
+          "next": "end_error",
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -1300,
+          "y": 1650
+        },
+        "method": "POST",
+        "content_type": "application/json",
+        "add_twilio_auth": false,
+        "body": "{\"phone\": \"{{flow.variables.phone_number}}\", \"status\": \"ERROR\", \"timestamp\": \"{{now | date: '%Y-%m-%d %H:%M:%S'}}\"}",
+        "url": "https://can-wabracongo.ywcdigital.com/api/can/error"
+      }
+    },
+    {
+      "name": "end_success",
+      "type": "set-variables",
+      "transitions": [],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "INSCRIPTION_COMPLETE",
+            "key": "flow_status"
+          }
+        ],
+        "offset": {
+          "x": -400,
+          "y": 5900
+        }
+      }
+    },
+    {
+      "name": "end_deja_inscrit",
+      "type": "set-variables",
+      "transitions": [],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "DEJA_INSCRIT",
+            "key": "flow_status"
+          }
+        ],
+        "offset": {
+          "x": 600,
+          "y": 1650
+        }
+      }
+    },
+    {
+      "name": "end_reactivated",
+      "type": "set-variables",
+      "transitions": [],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "REACTIVATED",
+            "key": "flow_status"
+          }
+        ],
+        "offset": {
+          "x": 1100,
+          "y": 2200
+        }
+      }
+    },
+    {
+      "name": "end_refus",
+      "type": "set-variables",
+      "transitions": [],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "REFUS",
+            "key": "flow_status"
+          }
+        ],
+        "offset": {
+          "x": 100,
+          "y": 2400
+        }
+      }
+    },
+    {
+      "name": "end_stop",
+      "type": "set-variables",
+      "transitions": [],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "STOP",
+            "key": "flow_status"
+          }
+        ],
+        "offset": {
+          "x": 500,
+          "y": 700
+        }
+      }
+    },
+    {
+      "name": "end_abandon",
+      "type": "set-variables",
+      "transitions": [],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "ABANDON",
+            "key": "flow_status"
+          }
+        ],
+        "offset": {
+          "x": -1300,
+          "y": 2900
+        }
+      }
+    },
+    {
+      "name": "end_timeout",
+      "type": "set-variables",
+      "transitions": [],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "TIMEOUT",
+            "key": "flow_status"
+          }
+        ],
+        "offset": {
+          "x": -1500,
+          "y": 1650
+        }
+      }
+    },
+    {
+      "name": "end_error",
+      "type": "set-variables",
+      "transitions": [],
+      "properties": {
+        "variables": [
+          {
+            "type": "string",
+            "value": "ERROR",
+            "key": "flow_status"
+          }
+        ],
+        "offset": {
+          "x": -1500,
+          "y": 1900
+        }
+      }
+    }
+  ],
+  "initial_state": "Trigger",
+  "flags": {
+    "allow_concurrent_calls": true
+  }
+}

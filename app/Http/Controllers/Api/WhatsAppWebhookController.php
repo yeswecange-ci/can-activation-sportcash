@@ -389,7 +389,7 @@ class WhatsAppWebhookController extends Controller
             $message .= "📊 Ton pronostic: *{$scoreA} - {$scoreB}*\n";
             $message .= "📅 Match: " . $match->match_date->format('d/m à H:i') . "\n\n";
             $message .= "🍀 Bonne chance !\n\n";
-            $message .= "💡 Envoie MENU pour d'autres options";
+            // $message .= "💡 Envoie MENU pour d'autres options";
 
             $this->whatsapp->sendMessage($session->phone, $message);
 
@@ -439,7 +439,7 @@ class WhatsAppWebhookController extends Controller
             $message .= "\n";
         }
 
-        $message .= "💡 Envoie PRONOSTIC pour faire un pronostic !";
+        $message .= "💡 Saisis le chiffres qui correspond à ton match pour faire un pronostic !";
 
         $this->whatsapp->sendMessage($phone, $message);
     }
