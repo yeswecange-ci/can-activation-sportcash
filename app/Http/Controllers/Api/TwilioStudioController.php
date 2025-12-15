@@ -512,16 +512,177 @@ class TwilioStudioController extends Controller
     }
 
     /**
+     * Endpoint: GET /api/can/matches/upcoming
+     * Récupérer tous les matchs à venir (prochains 7 jours)
+     */
+    public function getUpcomingMatches(Request $request)
+    {
+        $limit = $request->input('limit', 10); // Par défaut 10 matchs
+        $days = $request->input('days', 7); // Par défaut 7 jours
+
+        $now = now();
+        $endDate = now()->addDays($days);
+
+        $matches = FootballMatch::where('match_date', '>=', $now)
+            ->where('match_date', '<=', $endDate)
+            ->whereIn('status', ['scheduled', 'live'])
+            ->orderBy('match_date', 'asc')
+            ->limit($limit)
+            ->get(['id', 'team_a', 'team_b', 'match_date', 'status', 'pronostic_enabled']);
+
+        if ($matches->isEmpty()) {
+            return response()->json([
+                'success'     => true,
+                'has_matches' => false,
+                'message'     => 'Aucun match à venir.',
+                'matches'     => [],
+            ]);
+        }
+
+        $formattedMatches = $matches->map(function ($match, $index) {
+            return [
+                'id'                => $match->id,
+                'number'            => $index + 1,
+                'team_a'            => $match->team_a,
+                'team_b'            => $match->team_b,
+                'match_date'        => $match->match_date->format('d/m/Y'),
+                'match_time'        => $match->match_date->format('H:i'),
+                'status'            => $match->status,
+                'pronostic_enabled' => $match->pronostic_enabled,
+            ];
+        });
+
+        return response()->json([
+            'success'     => true,
+            'has_matches' => true,
+            'count'       => $matches->count(),
+            'matches'     => $formattedMatches,
+        ]);
+    }
+
+    /**
+     * Endpoint: GET /api/can/matches/formatted
+     * Récupérer la liste des matchs formatée pour WhatsApp (message texte)
+     */
+    public function getMatchesFormatted(Request $request)
+    {
+        $limit = $request->input('limit', 5); // Par défaut 5 matchs
+        $days = $request->input('days', 7); // Par défaut 7 jours
+
+        $now = now();
+        $endDate = now()->addDays($days);
+
+        $matches = FootballMatch::where('match_date', '>=', $now)
+            ->where('match_date', '<=', $endDate)
+            ->whereIn('status', ['scheduled', 'live'])
+            ->orderBy('match_date', 'asc')
+            ->limit($limit)
+            ->get();
+
+        if ($matches->isEmpty()) {
+            return response()->json([
+                'success'     => true,
+                'has_matches' => false,
+                'message'     => "⚽ Aucun match programmé pour le moment.\n\nRevenez bientôt pour découvrir les prochaines rencontres !",
+            ]);
+        }
+
+        // Construire le message formaté
+        $message = "⚽ *PROCHAINS MATCHS CAN 2025*\n\n";
+
+        foreach ($matches as $index => $match) {
+            $number = $index + 1;
+            $date = $match->match_date->format('d/m/Y');
+            $time = $match->match_date->format('H:i');
+            $pronoStatus = $match->pronostic_enabled ? '✅' : '🔒';
+
+            $message .= "{$number}. {$match->team_a} 🆚 {$match->team_b}\n";
+            $message .= "   📅 {$date} à {$time}\n";
+            $message .= "   {$pronoStatus} Pronostics " . ($match->pronostic_enabled ? 'ouverts' : 'fermés') . "\n\n";
+        }
+
+        $message .= "💡 Envoie PRONO pour faire ton pronostic !";
+
+        return response()->json([
+            'success'     => true,
+            'has_matches' => true,
+            'count'       => $matches->count(),
+            'message'     => $message,
+            'matches'     => $matches->map(function ($match, $index) {
+                return [
+                    'id'                => $match->id,
+                    'number'            => $index + 1,
+                    'team_a'            => $match->team_a,
+                    'team_b'            => $match->team_b,
+                    'match_date'        => $match->match_date->format('d/m/Y'),
+                    'match_time'        => $match->match_date->format('H:i'),
+                    'pronostic_enabled' => $match->pronostic_enabled,
+                ];
+            }),
+        ]);
+    }
+
+    /**
+     * Endpoint: GET /api/can/matches/{id}
+     * Récupérer les détails d'un match spécifique
+     */
+    public function getMatch(Request $request, $id)
+    {
+        $match = FootballMatch::find($id);
+
+        if (!$match) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Match non trouvé.',
+            ], 404);
+        }
+
+        // Vérifier si l'utilisateur a déjà fait un pronostic sur ce match
+        $userPronostic = null;
+        if ($request->has('phone')) {
+            $phone = $this->formatPhone($request->input('phone'));
+            $user = User::where('phone', $phone)->first();
+
+            if ($user) {
+                $userPronostic = Pronostic::where('user_id', $user->id)
+                    ->where('match_id', $match->id)
+                    ->first();
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'match' => [
+                'id' => $match->id,
+                'team_a' => $match->team_a,
+                'team_b' => $match->team_b,
+                'match_date' => $match->match_date->format('d/m/Y'),
+                'match_time' => $match->match_date->format('H:i'),
+                'status' => $match->status,
+                'pronostic_enabled' => $match->pronostic_enabled,
+                'can_bet' => Pronostic::canBet($match),
+            ],
+            'user_pronostic' => $userPronostic ? [
+                'prediction_type' => $userPronostic->prediction_type,
+                'prediction_text' => $userPronostic->prediction_text,
+                'created_at' => $userPronostic->created_at->format('d/m/Y H:i'),
+            ] : null,
+        ]);
+    }
+
+    /**
      * Endpoint: POST /api/can/pronostic
-     * Enregistrer un pronostic
+     * Enregistrer un pronostic (accepte les scores OU le type simple)
      */
     public function savePronostic(Request $request)
     {
+        // Validation avec support des deux modes : scores OU type simple
         $validated = $request->validate([
-            'phone'    => 'required|string',
-            'match_id' => 'required|integer|exists:matches,id',
-            'score_a'  => 'required|integer|min:0|max:20',
-            'score_b'  => 'required|integer|min:0|max:20',
+            'phone'           => 'required|string',
+            'match_id'        => 'required|integer|exists:matches,id',
+            'prediction_type' => 'nullable|in:team_a_win,team_b_win,draw',
+            'score_a'         => 'nullable|integer|min:0|max:20',
+            'score_b'         => 'nullable|integer|min:0|max:20',
         ]);
 
         $phone = $this->formatPhone($validated['phone']);
@@ -544,29 +705,69 @@ class TwilioStudioController extends Controller
             ], 400);
         }
 
-        // Créer ou mettre à jour le pronostic
-        $pronostic = Pronostic::createOrUpdate(
-            $user,
-            $match,
-            $validated['score_a'],
-            $validated['score_b']
-        );
+        // Mode 1 : Type de prédiction simple (recommandé pour WhatsApp)
+        if (isset($validated['prediction_type'])) {
+            $pronostic = Pronostic::createOrUpdateSimple(
+                $user,
+                $match,
+                $validated['prediction_type']
+            );
 
-        Log::info('Twilio Studio - Pronostic saved', [
-            'user_id'    => $user->id,
-            'match_id'   => $match->id,
-            'prediction' => "{$validated['score_a']} - {$validated['score_b']}",
-        ]);
+            $predictionText = match($validated['prediction_type']) {
+                'team_a_win' => "Victoire {$match->team_a}",
+                'team_b_win' => "Victoire {$match->team_b}",
+                'draw' => "Match nul",
+            };
 
-        return response()->json([
-            'success'   => true,
-            'message'   => 'Pronostic enregistré avec succès !',
-            'pronostic' => [
-                'id'    => $pronostic->id,
-                'match' => "{$match->team_a} vs {$match->team_b}",
+            Log::info('Twilio Studio - Pronostic saved (simple)', [
+                'user_id'    => $user->id,
+                'match_id'   => $match->id,
+                'prediction' => $validated['prediction_type'],
+            ]);
+
+            return response()->json([
+                'success'   => true,
+                'message'   => "✅ Pronostic enregistré !\n\n{$match->team_a} vs {$match->team_b}\n🎯 Ton pronostic : {$predictionText}",
+                'pronostic' => [
+                    'id'              => $pronostic->id,
+                    'match'           => "{$match->team_a} vs {$match->team_b}",
+                    'prediction_type' => $validated['prediction_type'],
+                    'prediction_text' => $predictionText,
+                ],
+            ]);
+        }
+
+        // Mode 2 : Scores (mode classique)
+        if (isset($validated['score_a']) && isset($validated['score_b'])) {
+            $pronostic = Pronostic::createOrUpdate(
+                $user,
+                $match,
+                $validated['score_a'],
+                $validated['score_b']
+            );
+
+            Log::info('Twilio Studio - Pronostic saved (scores)', [
+                'user_id'    => $user->id,
+                'match_id'   => $match->id,
                 'prediction' => "{$validated['score_a']} - {$validated['score_b']}",
-            ],
-        ]);
+            ]);
+
+            return response()->json([
+                'success'   => true,
+                'message'   => "✅ Pronostic enregistré !\n\n{$match->team_a} vs {$match->team_b}\n🎯 Ton pronostic : {$validated['score_a']} - {$validated['score_b']}",
+                'pronostic' => [
+                    'id'         => $pronostic->id,
+                    'match'      => "{$match->team_a} vs {$match->team_b}",
+                    'prediction' => "{$validated['score_a']} - {$validated['score_b']}",
+                ],
+            ]);
+        }
+
+        // Si ni prediction_type ni scores fournis
+        return response()->json([
+            'success' => false,
+            'message' => 'Vous devez fournir soit prediction_type, soit score_a et score_b.',
+        ], 400);
     }
 
     /**

@@ -42,7 +42,14 @@ Route::prefix('can')->group(function () {
     // Nouvelles API pour le flow interactif
     Route::post('/check-user', [TwilioStudioController::class, 'checkUser'])->name('api.can.check-user');
     Route::get('/villages', [TwilioStudioController::class, 'getVillages'])->name('api.can.villages');
+
+    // Matchs
     Route::get('/matches/today', [TwilioStudioController::class, 'getMatchesToday'])->name('api.can.matches.today');
+    Route::get('/matches/upcoming', [TwilioStudioController::class, 'getUpcomingMatches'])->name('api.can.matches.upcoming');
+    Route::get('/matches/formatted', [TwilioStudioController::class, 'getMatchesFormatted'])->name('api.can.matches.formatted');
+    Route::get('/matches/{id}', [TwilioStudioController::class, 'getMatch'])->name('api.can.matches.show');
+
+    // Pronostics et autres
     Route::post('/pronostic', [TwilioStudioController::class, 'savePronostic'])->name('api.can.pronostic');
     Route::post('/unsubscribe', [TwilioStudioController::class, 'unsubscribe'])->name('api.can.unsubscribe');
     Route::get('/partners', [TwilioStudioController::class, 'getPartners'])->name('api.can.partners');

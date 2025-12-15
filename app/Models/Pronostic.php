@@ -12,6 +12,7 @@ class Pronostic extends Model
     protected $fillable = [
         'user_id',
         'match_id',
+        'prediction_type',
         'predicted_score_a',
         'predicted_score_b',
         'is_winner',
@@ -22,6 +23,11 @@ class Pronostic extends Model
         'predicted_score_a' => 'integer',
         'predicted_score_b' => 'integer',
     ];
+
+    // Types de prédiction possibles
+    const PREDICTION_TEAM_A_WIN = 'team_a_win';
+    const PREDICTION_TEAM_B_WIN = 'team_b_win';
+    const PREDICTION_DRAW = 'draw';
 
     // Relations
     public function user()
@@ -79,7 +85,7 @@ class Pronostic extends Model
     }
 
     /**
-     * Créer ou mettre à jour un pronostic
+     * Créer ou mettre à jour un pronostic avec des scores
      */
     public static function createOrUpdate(User $user, FootballMatch $match, int $scoreA, int $scoreB): self
     {
@@ -91,8 +97,53 @@ class Pronostic extends Model
             [
                 'predicted_score_a' => $scoreA,
                 'predicted_score_b' => $scoreB,
+                'prediction_type' => null, // Reset le type si on utilise des scores
             ]
         );
+    }
+
+    /**
+     * Créer ou mettre à jour un pronostic avec un type simple
+     */
+    public static function createOrUpdateSimple(User $user, FootballMatch $match, string $predictionType): self
+    {
+        // Valider le type de prédiction
+        if (!in_array($predictionType, [self::PREDICTION_TEAM_A_WIN, self::PREDICTION_TEAM_B_WIN, self::PREDICTION_DRAW])) {
+            throw new \InvalidArgumentException("Type de prédiction invalide: {$predictionType}");
+        }
+
+        return self::updateOrCreate(
+            [
+                'user_id' => $user->id,
+                'match_id' => $match->id,
+            ],
+            [
+                'prediction_type' => $predictionType,
+                'predicted_score_a' => null, // Reset les scores si on utilise le type
+                'predicted_score_b' => null,
+            ]
+        );
+    }
+
+    /**
+     * Obtenir le pronostic en format lisible
+     */
+    public function getPredictionTextAttribute(): string
+    {
+        if ($this->prediction_type) {
+            return match($this->prediction_type) {
+                self::PREDICTION_TEAM_A_WIN => "Victoire {$this->match->team_a}",
+                self::PREDICTION_TEAM_B_WIN => "Victoire {$this->match->team_b}",
+                self::PREDICTION_DRAW => "Match nul",
+                default => "Pronostic inconnu",
+            };
+        }
+
+        if ($this->predicted_score_a !== null && $this->predicted_score_b !== null) {
+            return "{$this->predicted_score_a} - {$this->predicted_score_b}";
+        }
+
+        return "Pas de pronostic";
     }
 
     /**
