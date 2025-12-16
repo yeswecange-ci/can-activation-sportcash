@@ -16,12 +16,14 @@ class Pronostic extends Model
         'predicted_score_a',
         'predicted_score_b',
         'is_winner',
+        'points_won',
     ];
 
     protected $casts = [
         'is_winner' => 'boolean',
         'predicted_score_a' => 'integer',
         'predicted_score_b' => 'integer',
+        'points_won' => 'integer',
     ];
 
     // Types de prédiction possibles

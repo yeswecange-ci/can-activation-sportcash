@@ -39,21 +39,10 @@ class LeaderboardController extends Controller
     protected function getLeaderboard($villageId = null, $limit = 100)
     {
         $query = User::select('users.*')
-            ->selectRaw('
-                COALESCE(SUM(CASE
-                    WHEN pronostics.is_winner = 1
-                        AND pronostics.predicted_score_a = matches.score_a
-                        AND pronostics.predicted_score_b = matches.score_b
-                    THEN 10
-                    WHEN pronostics.is_winner = 1
-                    THEN 5
-                    ELSE 0
-                END), 0) as total_points
-            ')
+            ->selectRaw('COALESCE(SUM(pronostics.points_won), 0) as total_points')
             ->selectRaw('COUNT(pronostics.id) as total_pronostics')
             ->selectRaw('SUM(CASE WHEN pronostics.is_winner = 1 THEN 1 ELSE 0 END) as total_wins')
             ->leftJoin('pronostics', 'users.id', '=', 'pronostics.user_id')
-            ->leftJoin('matches', 'pronostics.match_id', '=', 'matches.id')
             ->where('users.is_active', true)
             ->groupBy('users.id');
 

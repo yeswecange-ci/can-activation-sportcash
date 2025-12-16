@@ -50,7 +50,9 @@ Route::prefix('can')->group(function () {
     Route::get('/matches/{id}', [TwilioStudioController::class, 'getMatch'])->name('api.can.matches.show');
 
     // Pronostics et autres
-    Route::post('/pronostic', [TwilioStudioController::class, 'savePronostic'])->name('api.can.pronostic');
+    Route::post('/pronostic', [TwilioStudioController::class, 'savePronostic'])
+        ->middleware('force.json')
+        ->name('api.can.pronostic');
     Route::get('/pronostic/test', [TwilioStudioController::class, 'testPronostic'])->name('api.can.pronostic.test');
     Route::post('/unsubscribe', [TwilioStudioController::class, 'unsubscribe'])->name('api.can.unsubscribe');
     Route::get('/partners', [TwilioStudioController::class, 'getPartners'])->name('api.can.partners');

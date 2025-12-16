@@ -38,9 +38,9 @@
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-500 text-sm font-medium">Taux de Réussite</p>
+                    <p class="text-gray-500 text-sm font-medium">Total Points Distribués</p>
                     <h3 class="text-3xl font-bold text-purple-600 mt-2">
-                        {{ $stats['total_pronostics'] > 0 ? round(($stats['total_winners'] / $stats['total_pronostics']) * 100, 1) : 0 }}%
+                        {{ $stats['total_points_distributed'] ?? 0 }} pts
                     </h3>
                 </div>
                 <div class="bg-purple-100 rounded-full p-3">
@@ -57,7 +57,7 @@
         <div class="bg-white rounded-lg shadow">
             <div class="px-6 py-4 border-b border-gray-200">
                 <h3 class="text-lg font-semibold text-gray-800">🏆 Top 10 Joueurs</h3>
-                <p class="text-sm text-gray-500">Classés par nombre de pronostics gagnants</p>
+                <p class="text-sm text-gray-500">Classés par nombre de points</p>
             </div>
             <div class="p-6">
                 @if($stats['top_users']->count() > 0)
@@ -65,18 +65,18 @@
                         @foreach($stats['top_users'] as $index => $user)
                             <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                 <div class="flex items-center space-x-3">
-                                    <span class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full
+                                    <span class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full font-bold
                                         {{ $index === 0 ? 'bg-yellow-100 text-yellow-700' : ($index === 1 ? 'bg-gray-200 text-gray-700' : ($index === 2 ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700')) }}">
                                         {{ $index + 1 }}
                                     </span>
                                     <div>
                                         <div class="font-medium text-gray-900">{{ $user->name }}</div>
-                                        <div class="text-sm text-gray-500">{{ $user->phone }}</div>
+                                        <div class="text-xs text-gray-500">{{ $user->total_wins ?? 0 }} victoire(s) / {{ $user->total_pronostics ?? 0 }} prono(s)</div>
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <div class="text-lg font-bold text-green-600">{{ $user->pronostics_count }}</div>
-                                    <div class="text-xs text-gray-500">gagné(s)</div>
+                                    <div class="text-lg font-bold text-green-600">{{ $user->total_points ?? 0 }} pts</div>
+                                    <div class="text-xs text-gray-500">points</div>
                                 </div>
                             </div>
                         @endforeach
@@ -95,21 +95,29 @@
             <div class="p-6">
                 @if($stats['by_match']->count() > 0)
                     <div class="space-y-3">
-                        @foreach($stats['by_match'] as $stat)
+                        @foreach($stats['by_match'] as $match)
                             <div class="p-3 bg-gray-50 rounded-lg">
                                 <div class="flex items-center justify-between mb-2">
                                     <div class="font-medium text-gray-900">
-                                        {{ $stat->match->team_a }} vs {{ $stat->match->team_b }}
+                                        {{ $match->team_a }} vs {{ $match->team_b }}
                                     </div>
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                        {{ $stat->total }} pronostic(s)
-                                    </span>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                            {{ $match->total_pronostics ?? 0 }} prono(s)
+                                        </span>
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                            {{ $match->total_winners ?? 0 }} gagnant(s)
+                                        </span>
+                                    </div>
                                 </div>
                                 <div class="text-sm text-gray-500">
-                                    {{ $stat->match->match_date->format('d/m/Y à H:i') }}
+                                    {{ $match->match_date->format('d/m/Y à H:i') }}
+                                    @if($match->status === 'finished')
+                                        • Score: {{ $match->score_a ?? '-' }} - {{ $match->score_b ?? '-' }}
+                                    @endif
                                 </div>
                                 <div class="mt-2">
-                                    <a href="{{ route('admin.matches.show', $stat->match) }}" class="text-sm text-blue-600 hover:underline">
+                                    <a href="{{ route('admin.matches.show', $match) }}" class="text-sm text-blue-600 hover:underline">
                                         → Voir les détails
                                     </a>
                                 </div>

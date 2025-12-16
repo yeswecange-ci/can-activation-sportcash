@@ -82,26 +82,44 @@ class CalculatePronosticWinners extends Command
                 continue;
             }
 
-            // Trouver les pronostics gagnants (score exact)
-            $winningPronostics = $allPronostics->filter(function($prono) use ($match) {
-                return $prono->predicted_score_a == $match->score_a
-                    && $prono->predicted_score_b == $match->score_b;
-            });
+            // Déterminer le résultat du match
+            $matchResult = $this->getMatchResult($match);
 
-            $winnersCount = $winningPronostics->count();
+            // Trouver les pronostics gagnants
+            $exactWinners = collect();
+            $goodResultWinners = collect();
+
+            foreach ($allPronostics as $prono) {
+                $result = $this->checkPronostic($prono, $match, $matchResult);
+
+                if ($result === 'exact') {
+                    $exactWinners->push($prono);
+                    $prono->update(['is_winner' => true, 'points_won' => 10]);
+                } elseif ($result === 'good_result') {
+                    $goodResultWinners->push($prono);
+                    $prono->update(['is_winner' => true, 'points_won' => 5]);
+                } else {
+                    $prono->update(['is_winner' => false, 'points_won' => 0]);
+                }
+            }
+
+            $exactCount = $exactWinners->count();
+            $goodResultCount = $goodResultWinners->count();
+            $winnersCount = $exactCount + $goodResultCount;
             $participantsCount = $allPronostics->count();
 
-            $this->info("   📈 {$participantsCount} participants, {$winnersCount} gagnant(s)");
+            $this->info("   📈 {$participantsCount} participants");
+            $this->info("   🎯 {$exactCount} score(s) exact(s) (10 pts)");
+            $this->info("   ✅ {$goodResultCount} bon(s) résultat(s) (5 pts)");
+            $this->info("   🏆 Total gagnants: {$winnersCount}");
 
             if ($winnersCount > 0) {
-                // Marquer les pronostics comme gagnants
-                foreach ($winningPronostics as $prono) {
-                    $prono->update(['is_winner' => true]);
-                }
+                // Fusionner tous les gagnants
+                $allWinners = $exactWinners->merge($goodResultWinners);
 
-                // Attribuer les prix si définis
-                if ($match->prize_id) {
-                    foreach ($winningPronostics as $prono) {
+                // Attribuer les prix si définis (seulement aux scores exacts)
+                if ($match->prize_id && $exactCount > 0) {
+                    foreach ($exactWinners as $prono) {
                         $prizeWinner = PrizeWinner::create([
                             'user_id' => $prono->user_id,
                             'prize_id' => $match->prize_id,
@@ -115,9 +133,9 @@ class CalculatePronosticWinners extends Command
                 }
 
                 // Envoyer notifications WhatsApp aux gagnants
-                foreach ($winningPronostics as $prono) {
+                foreach ($allWinners as $prono) {
                     try {
-                        $this->sendWinnerNotification($prono->user, $match);
+                        $this->sendWinnerNotification($prono->user, $match, $prono->points_won ?? 5);
                         $this->line("   ✅ Notification envoyée à {$prono->user->name}");
                     } catch (\Exception $e) {
                         $this->error("   ❌ Erreur notification pour {$prono->user->name}: {$e->getMessage()}");
@@ -151,16 +169,83 @@ class CalculatePronosticWinners extends Command
     }
 
     /**
+     * Déterminer le résultat du match
+     */
+    protected function getMatchResult($match)
+    {
+        if ($match->score_a > $match->score_b) {
+            return 'team_a_win';
+        } elseif ($match->score_b > $match->score_a) {
+            return 'team_b_win';
+        } else {
+            return 'draw';
+        }
+    }
+
+    /**
+     * Vérifier un pronostic
+     * Retourne: 'exact', 'good_result', ou 'wrong'
+     */
+    protected function checkPronostic($prono, $match, $matchResult)
+    {
+        // Mode 1: Pronostic avec scores
+        if ($prono->predicted_score_a !== null && $prono->predicted_score_b !== null) {
+            // Score exact ?
+            if ($prono->predicted_score_a == $match->score_a && $prono->predicted_score_b == $match->score_b) {
+                return 'exact';
+            }
+
+            // Bon résultat (victoire/nul) ?
+            $pronoResult = $this->getResultFromScores($prono->predicted_score_a, $prono->predicted_score_b);
+            if ($pronoResult === $matchResult) {
+                return 'good_result';
+            }
+
+            return 'wrong';
+        }
+
+        // Mode 2: Pronostic simple (prediction_type)
+        if ($prono->prediction_type) {
+            if ($prono->prediction_type === $matchResult) {
+                return 'good_result';
+            }
+
+            return 'wrong';
+        }
+
+        return 'wrong';
+    }
+
+    /**
+     * Déterminer le résultat à partir de scores
+     */
+    protected function getResultFromScores($scoreA, $scoreB)
+    {
+        if ($scoreA > $scoreB) {
+            return 'team_a_win';
+        } elseif ($scoreB > $scoreA) {
+            return 'team_b_win';
+        } else {
+            return 'draw';
+        }
+    }
+
+    /**
      * Envoyer notification WhatsApp au gagnant
      */
-    protected function sendWinnerNotification($user, $match)
+    protected function sendWinnerNotification($user, $match, $points = 5)
     {
         $message = "🎉 *FÉLICITATIONS !* 🎉\n\n";
         $message .= "Tu as GAGNÉ ton pronostic !\n\n";
         $message .= "⚽ *Match:* {$match->team_a} vs {$match->team_b}\n";
-        $message .= "📊 *Score final:* {$match->score_a} - {$match->score_b}\n\n";
+        $message .= "📊 *Score final:* {$match->score_a} - {$match->score_b}\n";
+        $message .= "✨ *Points gagnés:* {$points} pts\n\n";
 
-        if ($match->prize_id) {
+        if ($points == 10) {
+            $message .= "🎯 *SCORE EXACT !* Tu es un champion !\n\n";
+        }
+
+        if ($match->prize_id && $points == 10) {
             $prize = $match->prize;
             $message .= "🎁 *Tu as gagné:* {$prize->name} !\n";
             $message .= "💰 Valeur: {$prize->value} {$prize->currency}\n\n";

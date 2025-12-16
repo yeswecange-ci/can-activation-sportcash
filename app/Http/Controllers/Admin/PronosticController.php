@@ -92,15 +92,23 @@ class PronosticController extends Controller
         $stats = [
             'total_pronostics' => Pronostic::count(),
             'total_winners' => Pronostic::where('is_winner', true)->count(),
-            'by_match' => Pronostic::selectRaw('match_id, count(*) as total')
-                ->groupBy('match_id')
-                ->with('match')
+            'total_points_distributed' => Pronostic::sum('points_won'),
+            'by_match' => FootballMatch::select('matches.*')
+                ->selectRaw('COUNT(pronostics.id) as total_pronostics')
+                ->selectRaw('SUM(CASE WHEN pronostics.is_winner = 1 THEN 1 ELSE 0 END) as total_winners')
+                ->leftJoin('pronostics', 'matches.id', '=', 'pronostics.match_id')
+                ->groupBy('matches.id')
+                ->having('total_pronostics', '>', 0)
+                ->orderBy('match_date', 'desc')
                 ->get(),
-            'top_users' => User::withCount(['pronostics' => function ($q) {
-                $q->where('is_winner', true);
-            }])
-                ->having('pronostics_count', '>', 0)
-                ->orderBy('pronostics_count', 'desc')
+            'top_users' => User::select('users.*')
+                ->selectRaw('SUM(pronostics.points_won) as total_points')
+                ->selectRaw('COUNT(pronostics.id) as total_pronostics')
+                ->selectRaw('SUM(CASE WHEN pronostics.is_winner = 1 THEN 1 ELSE 0 END) as total_wins')
+                ->leftJoin('pronostics', 'users.id', '=', 'pronostics.user_id')
+                ->groupBy('users.id')
+                ->having('total_points', '>', 0)
+                ->orderBy('total_points', 'desc')
                 ->take(10)
                 ->get(),
         ];
