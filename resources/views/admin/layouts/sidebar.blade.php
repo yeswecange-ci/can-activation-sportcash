@@ -22,7 +22,7 @@
         </a>
 
         <!-- Villages -->
-        <a href="{{ route('admin.villages.index') }}"
+        {{-- <a href="{{ route('admin.villages.index') }}"
             class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-all rounded-lg group {{ request()->routeIs('admin.villages.*') ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg' : '' }}">
             <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.villages.*') ? 'text-white' : 'text-gray-400 group-hover:text-green-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -31,7 +31,7 @@
                     d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
             </svg>
             <span class="font-medium">Villages CAN</span>
-        </a>
+        </a> --}}
 
         <!-- Partenaires -->
         <a href="{{ route('admin.partners.index') }}"
@@ -99,7 +99,7 @@
         </a>
 
         <!-- QR Codes -->
-        <a href="{{ route('admin.qrcodes.index') }}"
+        {{-- <a href="{{ route('admin.qrcodes.index') }}"
             class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-all rounded-lg group {{ request()->routeIs('admin.qrcodes.*') ? 'bg-gradient-to-r from-cyan-600 to-cyan-700 text-white shadow-lg' : '' }}">
             <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.qrcodes.*') ? 'text-white' : 'text-gray-400 group-hover:text-cyan-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -107,7 +107,7 @@
                 </path>
             </svg>
             <span class="font-medium">QR Codes</span>
-        </a>
+        </a> --}}
 
         <!-- Templates -->
         {{-- <a href="{{ route('admin.templates.index') }}"
