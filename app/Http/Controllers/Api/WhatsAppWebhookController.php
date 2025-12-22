@@ -292,15 +292,31 @@ class WhatsAppWebhookController extends Controller
             ->first();
 
         if ($existingProno) {
-            $message = "⚠️ Tu as déjà un pronostic pour ce match :\n\n";
-            $message .= "⚽ {$match->team_a} vs {$match->team_b}\n";
-            $message .= "📊 Ton prono: {$existingProno->predicted_score_a} - {$existingProno->predicted_score_b}\n\n";
-            $message .= "💡 Tu vas le modifier.\n\n";
+            // BLOQUER l'utilisateur - impossible de modifier
+            $message = "🚫 *PRONOSTIC DÉJÀ ENREGISTRÉ*\n\n";
+            $message .= "⚽ {$match->team_a} vs {$match->team_b}\n\n";
+            $message .= "📊 Ton pronostic actuel :\n";
+            $message .= "   *{$existingProno->predicted_score_a} - {$existingProno->predicted_score_b}*\n\n";
+            $message .= "📅 Placé le : " . $existingProno->created_at->format('d/m/Y à H:i') . "\n\n";
+            $message .= "❌ *Impossible de modifier ton pronostic.*\n\n";
+            $message .= "💡 Envoie MENU pour voir d'autres options.";
+
+            $this->whatsapp->sendMessage($session->phone, $message);
+            
+            // Réinitialiser la session
+            $session->setState(ConversationSession::STATE_REGISTERED);
+            
+            Log::info('User tried to modify existing pronostic', [
+                'user_id' => $user->id,
+                'match_id' => $match->id,
+                'existing_pronostic_id' => $existingProno->id,
+            ]);
+
+            return;
         }
 
-        // Demander le score de l'équipe A
-        $message = ($existingProno ? $message : '');
-        $message .= "🎯 *PRONOSTIC*\n\n";
+        // Pas de pronostic existant - continuer le flow
+        $message = "🎯 *PRONOSTIC*\n\n";
         $message .= "⚽ {$match->team_a} vs {$match->team_b}\n";
         $message .= "📅 " . $match->match_date->format('d/m à H:i') . "\n\n";
         $message .= "Quel sera le score de *{$match->team_a}* ?\n";
@@ -371,17 +387,13 @@ class WhatsAppWebhookController extends Controller
         }
 
         try {
-            // Créer ou mettre à jour le pronostic
-            $pronostic = \App\Models\Pronostic::updateOrCreate(
-                [
-                    'user_id' => $user->id,
-                    'match_id' => $match->id,
-                ],
-                [
-                    'predicted_score_a' => $scoreA,
-                    'predicted_score_b' => $scoreB,
-                ]
-            );
+            // Créer le pronostic (on utilise create au lieu de updateOrCreate car on a déjà vérifié l'existence)
+            $pronostic = \App\Models\Pronostic::create([
+                'user_id' => $user->id,
+                'match_id' => $match->id,
+                'predicted_score_a' => $scoreA,
+                'predicted_score_b' => $scoreB,
+            ]);
 
             // Message de confirmation
             $message = "✅ *PRONOSTIC ENREGISTRÉ !*\n\n";
@@ -456,7 +468,12 @@ class WhatsAppWebhookController extends Controller
             ->get();
 
         if ($matches->isEmpty()) {
-            $this->whatsapp->sendMessage($session->phone, "❌ Aucun match disponible pour pronostics actuellement.");
+            $message = "❌ *AUCUN MATCH DISPONIBLE*\n\n";
+            $message .= "Il n'y a aucun match ouvert pour les pronostics en ce moment.\n\n";
+            $message .= "📅 Les pronostics seront disponibles dès qu'un nouveau match sera programmé.\n\n";
+            $message .= "💡 Envoie MENU pour voir les autres options.";
+            
+            $this->whatsapp->sendMessage($session->phone, $message);
             return;
         }
 

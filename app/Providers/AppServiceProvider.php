@@ -23,8 +23,8 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
 
         // Forcer HTTPS en production (Coolify utilise un reverse proxy)
-        if (config('app.env') === 'production' || request()->header('X-Forwarded-Proto') === 'https') {
-            URL::forceScheme('https');
-        }
+        // if (config('app.env') === 'production' || request()->header('X-Forwarded-Proto') === 'https') {
+        //     URL::forceScheme('https');
+        // }
     }
 }
