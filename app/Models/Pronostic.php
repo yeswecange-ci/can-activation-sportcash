@@ -69,19 +69,27 @@ class Pronostic extends Model
      */
     public function evaluateResult(int $actualScoreA, int $actualScoreB): self
     {
-        // Déterminer le type de résultat réel et prédit
+        // Déterminer le type de résultat réel
         $actualResult = $this->determineResultType($actualScoreA, $actualScoreB);
-        $predictedResult = $this->determineResultType(
-            $this->predicted_score_a, 
-            $this->predicted_score_b
-        );
-        
+
+        // Déterminer le type de résultat prédit
+        // Si prediction_type est défini, l'utiliser directement
+        // Sinon, calculer à partir des scores prédits
+        if ($this->prediction_type) {
+            $predictedResult = $this->prediction_type;
+        } else {
+            $predictedResult = $this->determineResultType(
+                $this->predicted_score_a ?? 0,
+                $this->predicted_score_b ?? 0
+            );
+        }
+
         // Le résultat est-il correct ?
         if ($actualResult === $predictedResult) {
             $this->is_winner = true;
-            
+
             // Score exact ? Bonus !
-            if ($this->predicted_score_a == $actualScoreA && 
+            if ($this->predicted_score_a == $actualScoreA &&
                 $this->predicted_score_b == $actualScoreB) {
                 $this->points_won = self::POINTS_EXACT_SCORE;
             } else {
@@ -93,9 +101,9 @@ class Pronostic extends Model
             $this->is_winner = false;
             $this->points_won = self::POINTS_WRONG;
         }
-        
+
         $this->save();
-        
+
         return $this;
     }
 
