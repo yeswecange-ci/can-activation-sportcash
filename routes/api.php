@@ -36,8 +36,8 @@ Route::prefix('can')->group(function () {
     Route::post('/abandon', [TwilioStudioController::class, 'abandon'])->name('api.can.abandon');
     Route::post('/timeout', [TwilioStudioController::class, 'timeout'])->name('api.can.timeout');
     Route::post('/error', [TwilioStudioController::class, 'error'])->name('api.can.error');
-    Route::post('/can/reactivate', [TwilioStudioController::class, 'reactivate']);
-    Route::post('/can/log', [TwilioStudioController::class, 'log']);
+    Route::post('/reactivate', [TwilioStudioController::class, 'reactivate'])->name('api.can.reactivate');
+    Route::post('/log', [TwilioStudioController::class, 'log'])->name('api.can.log');
 
     // Nouvelles API pour le flow interactif
     Route::post('/check-user', [TwilioStudioController::class, 'checkUser'])->name('api.can.check-user');
@@ -49,11 +49,14 @@ Route::prefix('can')->group(function () {
     Route::get('/matches/formatted', [TwilioStudioController::class, 'getMatchesFormatted'])->name('api.can.matches.formatted');
     Route::get('/matches/{id}', [TwilioStudioController::class, 'getMatch'])->name('api.can.matches.show');
 
-    // Pronostics et autres
+    // Pronostics
+    Route::post('/check-pronostic', [TwilioStudioController::class, 'checkPronostic'])->name('api.can.check-pronostic'); // ✅ NOUVELLE ROUTE
     Route::post('/pronostic', [TwilioStudioController::class, 'savePronostic'])
         ->middleware('force.json')
         ->name('api.can.pronostic');
     Route::get('/pronostic/test', [TwilioStudioController::class, 'testPronostic'])->name('api.can.pronostic.test');
+    
+    // Autres endpoints
     Route::post('/unsubscribe', [TwilioStudioController::class, 'unsubscribe'])->name('api.can.unsubscribe');
     Route::get('/partners', [TwilioStudioController::class, 'getPartners'])->name('api.can.partners');
     Route::get('/prizes', [TwilioStudioController::class, 'getPrizes'])->name('api.can.prizes');

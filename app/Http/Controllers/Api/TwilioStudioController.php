@@ -338,8 +338,6 @@ class TwilioStudioController extends Controller
      * Endpoint: POST /api/can/check-user
      * Vérifier si l'utilisateur existe déjà
      */
-    // Dans TwilioStudioController.php - checkUser()
-
     public function checkUser(Request $request)
     {
         $validated = $request->validate([
@@ -365,12 +363,11 @@ class TwilioStudioController extends Controller
             ]);
         }
 
-        // ✅ IMPORTANT : Retourner exactement "INSCRIT"
         return response()->json([
-            'status'  => 'INSCRIT', // Doit être exactement ce mot
+            'status'  => 'INSCRIT',
             'name'    => $user->name,
             'phone'   => $user->phone,
-            'user_id' => $user->id, // Ajouter l'ID pour debug
+            'user_id' => $user->id,
         ]);
     }
 
@@ -517,8 +514,8 @@ class TwilioStudioController extends Controller
      */
     public function getUpcomingMatches(Request $request)
     {
-        $limit = $request->input('limit', 10); // Par défaut 10 matchs
-        $days = $request->input('days', 7); // Par défaut 7 jours
+        $limit = $request->input('limit', 10);
+        $days = $request->input('days', 7);
 
         $now = now();
         $endDate = now()->addDays($days);
@@ -566,15 +563,15 @@ class TwilioStudioController extends Controller
      */
     public function getMatchesFormatted(Request $request)
     {
-        $limit = $request->input('limit', 5); // Par défaut 5 matchs
-        $days = $request->input('days', 30); // Par défaut 30 jours (augmenté de 7 à 30)
+        $limit = $request->input('limit', 5);
+        $days = $request->input('days', 30);
 
         $now = now();
         $endDate = now()->addDays($days);
 
         $matches = FootballMatch::where('match_date', '>=', $now)
             ->where('match_date', '<=', $endDate)
-            ->where('pronostic_enabled', true) // Seulement les matchs avec pronostics activés
+            ->where('pronostic_enabled', true)
             ->whereIn('status', ['scheduled', 'live'])
             ->orderBy('match_date', 'asc')
             ->limit($limit)
@@ -588,7 +585,6 @@ class TwilioStudioController extends Controller
             ]);
         }
 
-        // Construire le message formaté
         $message = "⚽ *PROCHAINS MATCHS CAN 2025*\n\n";
 
         foreach ($matches as $index => $match) {
@@ -638,7 +634,6 @@ class TwilioStudioController extends Controller
             ], 404);
         }
 
-        // Vérifier si l'utilisateur a déjà fait un pronostic sur ce match
         $userPronostic = null;
         if ($request->has('phone')) {
             $phone = $this->formatPhone($request->input('phone'));
@@ -672,17 +667,74 @@ class TwilioStudioController extends Controller
     }
 
     /**
+     * Endpoint: POST /api/can/check-pronostic
+     * Vérifier si l'utilisateur a déjà un pronostic pour ce match
+     */
+    public function checkPronostic(Request $request)
+    {
+        $validated = $request->validate([
+            'phone'    => 'required|string',
+            'match_id' => 'required|integer|exists:matches,id',
+        ]);
+
+        $phone = $this->formatPhone($validated['phone']);
+        $user  = User::where('phone', $phone)->where('is_active', true)->first();
+
+        if (! $user) {
+            return response()->json([
+                'has_pronostic' => false,
+                'message'       => 'Utilisateur non trouvé',
+            ]);
+        }
+
+        $match = FootballMatch::find($validated['match_id']);
+
+        if (! $match) {
+            return response()->json([
+                'has_pronostic' => false,
+                'message'       => 'Match non trouvé',
+            ]);
+        }
+
+        // Vérifier si un pronostic existe
+        $pronostic = Pronostic::where('user_id', $user->id)
+            ->where('match_id', $match->id)
+            ->first();
+
+        if (! $pronostic) {
+            return response()->json([
+                'has_pronostic' => false,
+                'message'       => 'Aucun pronostic trouvé',
+            ]);
+        }
+
+        // Formater le type de pronostic pour l'affichage
+        $pronoText = match ($pronostic->prediction_type ?? 'custom') {
+            'team_a_win' => "Victoire {$match->team_a}",
+            'team_b_win' => "Victoire {$match->team_b}",
+            'draw'       => "Match nul",
+            default      => "{$pronostic->predicted_score_a} - {$pronostic->predicted_score_b}",
+        };
+
+        return response()->json([
+            'has_pronostic'     => true,
+            'pronostic_id'      => $pronostic->id,
+            'pronostic_details' => $pronoText,
+            'created_at'        => $pronostic->created_at->format('d/m/Y à H:i'),
+            'message'           => 'Pronostic déjà enregistré',
+        ]);
+    }
+
+    /**
      * Endpoint: POST /api/can/pronostic
-     * Enregistrer un pronostic (accepte les scores OU le type simple)
+     * Enregistrer un pronostic (AVEC BLOCAGE DES MODIFICATIONS)
      */
     public function savePronostic(Request $request)
     {
-        // LOG: Début de la requête
         Log::info('=== DÉBUT savePronostic ===', [
             'all_data' => $request->all(),
             'method' => $request->method(),
             'url' => $request->fullUrl(),
-            'headers' => $request->headers->all(),
         ]);
 
         // Validation avec support des deux modes : scores OU type simple
@@ -716,13 +768,51 @@ class TwilioStudioController extends Controller
             ], 400);
         }
 
+        // ✅ VÉRIFIER SI UN PRONOSTIC EXISTE DÉJÀ (BLOCAGE)
+        $existingProno = Pronostic::where('user_id', $user->id)
+            ->where('match_id', $match->id)
+            ->first();
+
+        if ($existingProno) {
+            // Formater le pronostic existant pour l'affichage
+            $pronoText = match ($existingProno->prediction_type ?? 'custom') {
+                'team_a_win' => "Victoire {$match->team_a}",
+                'team_b_win' => "Victoire {$match->team_b}",
+                'draw'       => "Match nul",
+                default      => "{$existingProno->predicted_score_a} - {$existingProno->predicted_score_b}",
+            };
+
+            Log::warning('Pronostic already exists - modification blocked', [
+                'user_id' => $user->id,
+                'match_id' => $match->id,
+                'existing_pronostic_id' => $existingProno->id,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => "🚫 Tu as déjà un pronostic pour ce match !\n\n" .
+                             "📊 Ton pronostic : {$pronoText}\n" .
+                             "📅 Placé le : " . $existingProno->created_at->format('d/m/Y à H:i') . "\n\n" .
+                             "❌ Impossible de le modifier.",
+            ], 400);
+        }
+
         // Mode 1 : Type de prédiction simple (recommandé pour WhatsApp)
         if (isset($validated['prediction_type'])) {
-            $pronostic = Pronostic::createOrUpdateSimple(
-                $user,
-                $match,
-                $validated['prediction_type']
-            );
+            // Convertir prediction_type en scores
+            [$scoreA, $scoreB] = match ($validated['prediction_type']) {
+                'team_a_win' => [1, 0],
+                'team_b_win' => [0, 1],
+                'draw'       => [0, 0],
+            };
+
+            $pronostic = Pronostic::create([
+                'user_id'            => $user->id,
+                'match_id'           => $match->id,
+                'predicted_score_a'  => $scoreA,
+                'predicted_score_b'  => $scoreB,
+                'prediction_type'    => $validated['prediction_type'],
+            ]);
 
             $predictionText = match($validated['prediction_type']) {
                 'team_a_win' => "Victoire {$match->team_a}",
@@ -736,10 +826,13 @@ class TwilioStudioController extends Controller
                 'prediction' => $validated['prediction_type'],
             ]);
 
-            // Retour JSON avec headers explicites pour Twilio Studio
             return response()->json([
                 'success'   => true,
-                'message'   => "Pronostic enregistre ! " . $match->team_a . " vs " . $match->team_b . " - Ton pronostic : " . $predictionText,
+                'message'   => "✅ Pronostic enregistré !\n\n" .
+                               "⚽ {$match->team_a} vs {$match->team_b}\n" .
+                               "📊 Ton pronostic : {$predictionText}\n" .
+                               "📅 Match : " . $match->match_date->format('d/m à H:i') . "\n\n" .
+                               "🍀 Bonne chance !",
                 'pronostic' => [
                     'id'              => $pronostic->id,
                     'match'           => "{$match->team_a} vs {$match->team_b}",
@@ -753,12 +846,12 @@ class TwilioStudioController extends Controller
 
         // Mode 2 : Scores (mode classique)
         if (isset($validated['score_a']) && isset($validated['score_b'])) {
-            $pronostic = Pronostic::createOrUpdate(
-                $user,
-                $match,
-                $validated['score_a'],
-                $validated['score_b']
-            );
+            $pronostic = Pronostic::create([
+                'user_id'           => $user->id,
+                'match_id'          => $match->id,
+                'predicted_score_a' => $validated['score_a'],
+                'predicted_score_b' => $validated['score_b'],
+            ]);
 
             Log::info('Twilio Studio - Pronostic saved (scores)', [
                 'user_id'    => $user->id,
@@ -768,7 +861,11 @@ class TwilioStudioController extends Controller
 
             return response()->json([
                 'success'   => true,
-                'message'   => "✅ Pronostic enregistré !\n\n{$match->team_a} vs {$match->team_b}\n🎯 Ton pronostic : {$validated['score_a']} - {$validated['score_b']}",
+                'message'   => "✅ Pronostic enregistré !\n\n" .
+                               "⚽ {$match->team_a} vs {$match->team_b}\n" .
+                               "📊 Ton pronostic : {$validated['score_a']} - {$validated['score_b']}\n" .
+                               "📅 Match : " . $match->match_date->format('d/m à H:i') . "\n\n" .
+                               "🍀 Bonne chance !",
                 'pronostic' => [
                     'id'         => $pronostic->id,
                     'match'      => "{$match->team_a} vs {$match->team_b}",
@@ -790,7 +887,6 @@ class TwilioStudioController extends Controller
      */
     public function testPronostic(Request $request)
     {
-        // Récupérer un utilisateur actif
         $user = User::where('is_active', true)->first();
 
         if (!$user) {
@@ -800,7 +896,6 @@ class TwilioStudioController extends Controller
             ]);
         }
 
-        // Récupérer un match disponible
         $match = FootballMatch::where('pronostic_enabled', true)
             ->where('status', 'scheduled')
             ->first();
@@ -812,14 +907,12 @@ class TwilioStudioController extends Controller
             ]);
         }
 
-        // Simuler la requête
         $testRequest = new Request([
             'phone' => $user->phone,
             'match_id' => $match->id,
             'prediction_type' => 'team_a_win'
         ]);
 
-        // Appeler l'endpoint réel
         $response = $this->savePronostic($testRequest);
         $data = json_decode($response->getContent(), true);
 
@@ -957,11 +1050,9 @@ class TwilioStudioController extends Controller
      */
     private function extractVillageFromSource(string $sourceType, string $sourceDetail): ?int
     {
-        // Si la source est AFFICHE, le source_detail contient le nom du village
         if ($sourceType === 'AFFICHE') {
             $villageName = $sourceDetail;
 
-            // Essayer de trouver le village correspondant
             $village = Village::where('is_active', true)
                 ->where(function ($query) use ($villageName) {
                     $query->where('name', 'LIKE', "%{$villageName}%")
@@ -974,7 +1065,6 @@ class TwilioStudioController extends Controller
             }
         }
 
-        // Pour les autres types de sources, retourner null (utiliser le village par défaut)
         return null;
     }
 
@@ -983,13 +1073,9 @@ class TwilioStudioController extends Controller
      */
     private function formatPhone(string $phone): string
     {
-        // Retirer "whatsapp:" si présent
         $phone = str_replace('whatsapp:', '', $phone);
-
-        // Retirer tous les caractères non numériques sauf le +
         $phone = preg_replace('/[^0-9+]/', '', $phone);
 
-        // Ajouter + si absent
         if (! str_starts_with($phone, '+')) {
             $phone = '+' . $phone;
         }
