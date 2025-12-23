@@ -103,10 +103,10 @@ Route::prefix('admin')->group(function () {
         Route::get('matches/{match}/pronostics', [\App\Http\Controllers\Admin\PronosticController::class, 'byMatch'])
             ->name('admin.pronostics.by-match');
 
-        Route::post('/matches/{match}/evaluate-pronostics', [PronosticController::class, 'evaluateMatch'])
-            ->name('matches.evaluate');
-        Route::post('/pronostics/reevaluate-all', [PronosticController::class, 'reevaluateAll'])
-            ->name('pronostics.reevaluate-all');
+        Route::post('/matches/{match}/evaluate-pronostics', [\App\Http\Controllers\Admin\PronosticController::class, 'evaluateMatch'])
+            ->name('admin.matches.evaluate');
+        Route::post('/pronostics/reevaluate-all', [\App\Http\Controllers\Admin\PronosticController::class, 'reevaluateAll'])
+            ->name('admin.pronostics.reevaluate-all');
 
         // Routes Templates de Messages
         Route::resource('templates', \App\Http\Controllers\Admin\MessageTemplateController::class)

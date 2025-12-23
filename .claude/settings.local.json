@@ -20,7 +20,9 @@
       "Bash(php test_flow_complet.php:*)",
       "Bash(php check_pronostics.php:*)",
       "Bash(php:*)",
-      "Bash(powershell -Command:*)"
+      "Bash(powershell -Command:*)",
+      "Bash(ls:*)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []
