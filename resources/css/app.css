@@ -1,3 +1,83 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    :root {
+        /* CAN Color Variables */
+        --can-gold: #D4AF37;
+        --can-green: #006B3F;
+        --can-red: #DC2626;
+        --can-black: #1A1A1A;
+    }
+
+    body {
+        @apply antialiased;
+    }
+}
+
+@layer components {
+    /* Stat Card Component */
+    .stat-card {
+        @apply bg-white border-l-4 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow;
+    }
+
+    .stat-card-gold {
+        @apply stat-card border-can-gold-500;
+    }
+
+    .stat-card-green {
+        @apply stat-card border-can-green-500;
+    }
+
+    .stat-card-red {
+        @apply stat-card border-can-red-500;
+    }
+
+    /* Badge Components */
+    .badge {
+        @apply inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full;
+    }
+
+    .badge-success {
+        @apply badge border-2 border-green-500 text-green-700 bg-green-50;
+    }
+
+    .badge-warning {
+        @apply badge border-2 border-amber-500 text-amber-700 bg-amber-50;
+    }
+
+    .badge-error {
+        @apply badge border-2 border-red-500 text-red-700 bg-red-50;
+    }
+
+    .badge-info {
+        @apply badge border-2 border-blue-500 text-blue-700 bg-blue-50;
+    }
+
+    /* Card Component */
+    .card {
+        @apply bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all;
+    }
+
+    /* Table Styles */
+    .table-minimal {
+        @apply w-full border-collapse;
+    }
+
+    .table-minimal thead {
+        @apply bg-white border-b-2 border-gray-200;
+    }
+
+    .table-minimal th {
+        @apply px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider;
+    }
+
+    .table-minimal td {
+        @apply px-6 py-4 border-b border-gray-200;
+    }
+
+    .table-minimal tbody tr {
+        @apply hover:bg-gray-50 transition-colors;
+    }
+}
