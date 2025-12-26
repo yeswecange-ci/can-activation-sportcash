@@ -251,4 +251,125 @@ class PronosticController extends Controller
 
         return view('admin.pronostics.stats', compact('stats'));
     }
+
+    /**
+     * Export CSV des gagnants d'un match spécifique
+     */
+    public function exportWinners(FootballMatch $match)
+    {
+        // Récupérer uniquement les gagnants de ce match
+        $winners = $match->pronostics()
+            ->with(['user.village'])
+            ->where('is_winner', true)
+            ->orderByDesc('points_won')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        $filename = 'gagnants_' . str_replace(' ', '_', $match->team_a) . '_vs_' . str_replace(' ', '_', $match->team_b) . '_' . now()->format('Y-m-d_His') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ];
+
+        $callback = function() use ($winners, $match) {
+            $file = fopen('php://output', 'w');
+
+            // BOM UTF-8 pour Excel
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            // En-têtes
+            fputcsv($file, [
+                'Nom',
+                'Téléphone',
+                'Village',
+                'Pronostic',
+                'Score réel',
+                'Points gagnés',
+                'Type de gain',
+                'Date du pronostic'
+            ]);
+
+            // Données des gagnants
+            foreach ($winners as $winner) {
+                $gainType = $winner->points_won == Pronostic::POINTS_EXACT_SCORE
+                    ? 'Score exact'
+                    : 'Bon résultat';
+
+                fputcsv($file, [
+                    $winner->user->name,
+                    $winner->user->phone,
+                    $winner->user->village->name ?? 'N/A',
+                    $winner->prediction_text,
+                    ($match->score_a ?? '-') . ' - ' . ($match->score_b ?? '-'),
+                    $winner->points_won,
+                    $gainType,
+                    $winner->created_at->format('d/m/Y H:i'),
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Export CSV de tous les gagnants (tous matchs confondus)
+     */
+    public function exportAllWinners()
+    {
+        $winners = Pronostic::with(['user.village', 'match'])
+            ->where('is_winner', true)
+            ->orderByDesc('points_won')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $filename = 'tous_gagnants_' . now()->format('Y-m-d_His') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ];
+
+        $callback = function() use ($winners) {
+            $file = fopen('php://output', 'w');
+
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            fputcsv($file, [
+                'Nom',
+                'Téléphone',
+                'Village',
+                'Match',
+                'Pronostic',
+                'Score réel',
+                'Points gagnés',
+                'Type de gain',
+                'Date du pronostic'
+            ]);
+
+            foreach ($winners as $winner) {
+                $gainType = $winner->points_won == Pronostic::POINTS_EXACT_SCORE
+                    ? 'Score exact'
+                    : 'Bon résultat';
+
+                fputcsv($file, [
+                    $winner->user->name,
+                    $winner->user->phone,
+                    $winner->user->village->name ?? 'N/A',
+                    $winner->match->team_a . ' vs ' . $winner->match->team_b,
+                    $winner->prediction_text,
+                    ($winner->match->score_a ?? '-') . ' - ' . ($winner->match->score_b ?? '-'),
+                    $winner->points_won,
+                    $gainType,
+                    $winner->created_at->format('d/m/Y H:i'),
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

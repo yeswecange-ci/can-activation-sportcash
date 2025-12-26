@@ -94,6 +94,8 @@ Route::prefix('admin')->group(function () {
         // Routes Pronostics
         Route::get('pronostics/stats', [\App\Http\Controllers\Admin\PronosticController::class, 'stats'])
             ->name('admin.pronostics.stats');
+        Route::get('pronostics/export/winners', [\App\Http\Controllers\Admin\PronosticController::class, 'exportAllWinners'])
+            ->name('admin.pronostics.export.winners');
         Route::get('pronostics', [\App\Http\Controllers\Admin\PronosticController::class, 'index'])
             ->name('admin.pronostics.index');
         Route::get('pronostics/{pronostic}', [\App\Http\Controllers\Admin\PronosticController::class, 'show'])
@@ -102,6 +104,8 @@ Route::prefix('admin')->group(function () {
             ->name('admin.pronostics.destroy');
         Route::get('matches/{match}/pronostics', [\App\Http\Controllers\Admin\PronosticController::class, 'byMatch'])
             ->name('admin.pronostics.by-match');
+        Route::get('matches/{match}/pronostics/export', [\App\Http\Controllers\Admin\PronosticController::class, 'exportWinners'])
+            ->name('admin.pronostics.export.match-winners');
 
         Route::post('/matches/{match}/evaluate-pronostics', [\App\Http\Controllers\Admin\PronosticController::class, 'evaluateMatch'])
             ->name('admin.matches.evaluate');
