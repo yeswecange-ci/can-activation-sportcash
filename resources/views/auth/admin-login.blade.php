@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion Admin - CAN 2025 Kinshasa</title>
+    <title>Connexion Admin - CAN 2025 LONACI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -176,7 +176,7 @@
         <div class="login-card">
             <!-- Header -->
             <div class="login-header">
-                <h1 class="login-title">CAN 2025 Kinshasa</h1>
+                <h1 class="login-title">CAN 2025 LONACI</h1>
                 <p class="login-subtitle">Connexion Backoffice</p>
             </div>
 

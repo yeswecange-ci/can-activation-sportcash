@@ -1,10 +1,10 @@
 <aside class="w-64 bg-gradient-to-b from-gray-900 via-gray-900 to-gray-800 text-white flex-shrink-0 flex flex-col h-screen shadow-2xl" x-data="{ open: true }">
     <div class="p-6 flex-shrink-0 border-b border-gray-700">
         <div class="flex items-center space-x-3">
-            <div class="text-4xl">🦁</div>
+            <div class="text-4xl"></div>
             <div>
                 <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">FOOT 2025</h1>
-                <p class="text-gray-400 text-xs">Kinshasa</p>
+                <p class="text-gray-400 text-xs">LONACI</p>
             </div>
         </div>
     </div>
