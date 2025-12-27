@@ -100,12 +100,12 @@
                 </button>
             </form>
 
-            <!-- Footer -->
+            <!-- Footer 
             <div class="mt-6 pt-6 border-t border-gray-200 text-center">
                 <p class="text-xs text-gray-500">
                     © 2024 CAN 2025 Kinshasa - Tous droits réservés
                 </p>
-            </div>
+            </div>-->
         </div>
 
         <!-- Info supplémentaire -->

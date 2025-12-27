@@ -21,7 +21,7 @@
             <span class="font-medium">Dashboard</span>
         </a>
 
-        <!-- Villages -->
+        <!-- Villages 
         <a href="{{ route('admin.villages.index') }}"
             class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 transition-all rounded-lg group {{ request()->routeIs('admin.villages.*') ? 'bg-can-green-50 text-can-green-700 border-l-4 border-can-green-600 font-semibold' : '' }}">
             <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.villages.*') ? 'text-can-green-700' : 'text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,7 +31,7 @@
                     d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
             </svg>
             <span class="font-medium">Villages CAN</span>
-        </a>
+        </a>-->
 
         <!-- Partenaires -->
         <a href="{{ route('admin.partners.index') }}"
