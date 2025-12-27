@@ -4,254 +4,116 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion Admin - CAN 2025 LONACI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #f5f5f5;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-        }
-
-        .login-container {
-            width: 100%;
-            max-width: 420px;
-        }
-
-        .login-card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            padding: 3rem 2.5rem;
-        }
-
-        .login-header {
-            text-align: center;
-            margin-bottom: 2.5rem;
-        }
-
-        .login-title {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: #111827;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.02em;
-        }
-
-        .login-subtitle {
-            font-size: 0.9rem;
-            color: #6b7280;
-            font-weight: 400;
-        }
-
-        .alert {
-            padding: 1rem;
-            border-radius: 6px;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-            font-size: 0.875rem;
-            background: #fef2f2;
-            color: #991b1b;
-            border: 1px solid #fecaca;
-        }
-
-        .alert-icon {
-            flex-shrink: 0;
-        }
-
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 0.5rem;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            font-size: 0.95rem;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            transition: all 0.2s;
-            font-family: inherit;
-            background: white;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .form-input::placeholder {
-            color: #9ca3af;
-        }
-
-        .form-checkbox {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .form-checkbox input[type="checkbox"] {
-            width: 1rem;
-            height: 1rem;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            cursor: pointer;
-            accent-color: #3b82f6;
-        }
-
-        .form-checkbox label {
-            font-size: 0.875rem;
-            color: #4b5563;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 0.75rem 1.5rem;
-            font-size: 0.95rem;
-            font-weight: 600;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
-            background: #3b82f6;
-            color: white;
-        }
-
-        .btn:hover {
-            background: #2563eb;
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .footer {
-            margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid #e5e7eb;
-            text-align: center;
-        }
-
-        .footer p {
-            font-size: 0.75rem;
-            color: #9ca3af;
-        }
-
-        @media (max-width: 480px) {
-            .login-card {
-                padding: 2rem 1.5rem;
-            }
-
-            .login-title {
-                font-size: 1.5rem;
-            }
-        }
-    </style>
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700" rel="stylesheet" />
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body>
-    <div class="login-container">
-        <div class="login-card">
-            <!-- Header -->
-            <div class="login-header">
-                <h1 class="login-title">CAN 2025 LONACI</h1>
-                <p class="login-subtitle">Connexion Backoffice</p>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <!-- Logo et Titre -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-can-gold-500 rounded-full mb-4 shadow-lg">
+                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
             </div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">CAN 2025 LONACI</h1>
+            <p class="text-gray-600">Connexion Administrateur</p>
+        </div>
 
-            <!-- Alert -->
-            <div class="alert" style="display: none;" id="errorAlert">
-                <span class="alert-icon">⚠</span>
-                <span id="errorMessage"></span>
-            </div>
+        <!-- Carte de Connexion -->
+        <div class="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-900 mb-6 text-center">Accès Backoffice</h2>
 
-            <!-- Form -->
-            <form method="POST" action="/admin/login">
+            <!-- Alertes -->
+            @if (session('status'))
+                <div class="mb-6 px-4 py-3 rounded-lg bg-green-50 border-l-4 border-green-500 text-green-800 text-sm">
+                    {{ session('status') }}
+                </div>
+            @endif
+
+            @if ($errors->any())
+                <div class="mb-6 px-4 py-3 rounded-lg bg-red-50 border-l-4 border-red-500 text-red-800 text-sm">
+                    <ul class="list-disc list-inside space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <!-- Formulaire -->
+            <form method="POST" action="{{ route('admin.login') }}" class="space-y-5">
                 @csrf
+
                 <!-- Email -->
-                <div class="form-group">
-                    <label for="email" class="form-label">Email</label>
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                        Email
+                    </label>
                     <input
                         id="email"
                         type="email"
                         name="email"
-                        class="form-input"
-                        placeholder="admin@can2025.cd"
+                        value="{{ old('email') }}"
                         required
                         autofocus
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-can-gold-500 focus:border-can-gold-500 transition-colors"
+                        placeholder="admin@can2025.cd"
                     >
                 </div>
 
-                <!-- Password -->
-                <div class="form-group">
-                    <label for="password" class="form-label">Mot de passe</label>
+                <!-- Mot de passe -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                        Mot de passe
+                    </label>
                     <input
                         id="password"
                         type="password"
                         name="password"
-                        class="form-input"
-                        placeholder="••••••••"
                         required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-can-gold-500 focus:border-can-gold-500 transition-colors"
+                        placeholder="••••••••"
                     >
                 </div>
 
-                <!-- Remember Me -->
-                <div class="form-checkbox">
-                    <input id="remember" type="checkbox" name="remember">
-                    <label for="remember">Se souvenir de moi</label>
+                <!-- Se souvenir de moi -->
+                <div class="flex items-center">
+                    <input
+                        id="remember_me"
+                        type="checkbox"
+                        name="remember"
+                        class="w-4 h-4 text-can-gold-600 border-gray-300 rounded focus:ring-can-gold-500"
+                    >
+                    <label for="remember_me" class="ml-2 text-sm text-gray-700">
+                        Se souvenir de moi
+                    </label>
                 </div>
 
-                <!-- Submit Button -->
-                <button type="submit" class="btn">
+                <!-- Bouton de connexion -->
+                <button
+                    type="submit"
+                    class="w-full bg-can-gold-600 hover:bg-can-gold-700 text-white font-semibold py-3 px-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-can-gold-500 focus:ring-offset-2"
+                >
                     Se connecter
                 </button>
             </form>
 
             <!-- Footer -->
-            <div class="footer">
-                <p>© 2024 CAN 2025 Kinshasa. Tous droits réservés.</p>
+            <div class="mt-6 pt-6 border-t border-gray-200 text-center">
+                <p class="text-xs text-gray-500">
+                    © 2024 CAN 2025 Kinshasa - Tous droits réservés
+                </p>
             </div>
         </div>
+
+        <!-- Info supplémentaire -->
+        <div class="text-center mt-6">
+            <a href="{{ route('login') }}" class="text-sm text-gray-600 hover:text-can-gold-600 hover:underline">
+                ← Retour à la connexion utilisateur
+            </a>
+        </div>
     </div>
-
-    <script>
-        // Animation légère sur focus des inputs
-        document.querySelectorAll('.form-input').forEach(input => {
-            input.addEventListener('focus', function() {
-                const label = this.parentElement.querySelector('.form-label');
-                if (label) {
-                    label.style.color = '#3b82f6';
-                }
-            });
-
-            input.addEventListener('blur', function() {
-                const label = this.parentElement.querySelector('.form-label');
-                if (label) {
-                    label.style.color = '#374151';
-                }
-            });
-        });
-    </script>
 </body>
 </html>
