@@ -7,6 +7,13 @@ Route::get('/', function () {
     return redirect('/admin/login');
 });
 
+// Route Dashboard Utilisateur (protégée par auth)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
+});
+
 // Route publique - Scan QR Code (tracking + redirect WhatsApp)
 Route::get('/qr/{code}', [\App\Http\Controllers\Admin\QrCodeController::class, 'scan'])
     ->name('qr.scan');
@@ -161,3 +168,6 @@ Route::prefix('admin')->group(function () {
             ->name('admin.analytics.export.pronostics');
     });
 });
+
+// Charger les routes d'authentification utilisateur
+require __DIR__.'/auth.php';
