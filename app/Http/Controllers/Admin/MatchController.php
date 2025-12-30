@@ -89,17 +89,20 @@ class MatchController extends Controller
         $pronostics = $match->pronostics()->get();
 
         $winnersCount = 0;
+        $exactScoreCount = 0;
 
         foreach ($pronostics as $pronostic) {
-            // Vérifier si le pronostic est correct (score exact)
-            $isWinner = ($pronostic->predicted_score_a === $match->score_a)
-                && ($pronostic->predicted_score_b === $match->score_b);
+            // Utiliser la méthode evaluateResult() du modèle Pronostic
+            // qui gère correctement les matchs nuls et les types de résultats
+            $pronostic->evaluateResult($match->score_a, $match->score_b);
 
-            // Mettre à jour le statut du pronostic
-            $pronostic->update(['is_winner' => $isWinner]);
-
-            if ($isWinner) {
+            if ($pronostic->is_winner) {
                 $winnersCount++;
+
+                // Compter les scores exacts
+                if ($pronostic->points_won === \App\Models\Pronostic::POINTS_EXACT_SCORE) {
+                    $exactScoreCount++;
+                }
             }
         }
 
@@ -111,6 +114,7 @@ class MatchController extends Controller
             'score_final' => "{$match->score_a} - {$match->score_b}",
             'total_pronostics' => $pronostics->count(),
             'winners_count' => $winnersCount,
+            'exact_score_count' => $exactScoreCount,
         ]);
 
         return $winnersCount;
