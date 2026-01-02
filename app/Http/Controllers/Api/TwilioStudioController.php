@@ -793,17 +793,22 @@ class TwilioStudioController extends Controller
             ], 404);
         }
 
-        // Récupérer les matchs disponibles pour pronostics
+        // Récupérer TOUS les pronostics de l'utilisateur (peu importe si pronostic_enabled ou non)
+        // L'historique doit toujours être visible, même si les pronostics sont fermés
+        $userPronostics = Pronostic::where('user_id', $user->id)
+            ->with(['match' => function ($query) {
+                $query->where('match_date', '>', now()->subDays(7)); // Matchs des 7 derniers jours ou futurs
+            }])
+            ->whereHas('match', function ($query) {
+                $query->where('match_date', '>', now()->subDays(7));
+            })
+            ->get();
+
+        // Récupérer les matchs disponibles pour de NOUVEAUX pronostics
         $availableMatches = FootballMatch::where('pronostic_enabled', true)
             ->where('status', 'scheduled')
             ->where('match_date', '>', now()->addMinutes(5))
             ->orderBy('match_date', 'asc')
-            ->get();
-
-        // Récupérer les pronostics de l'utilisateur
-        $userPronostics = Pronostic::where('user_id', $user->id)
-            ->whereIn('match_id', $availableMatches->pluck('id'))
-            ->with('match')
             ->get();
 
         // Identifier les matchs sans pronostic
