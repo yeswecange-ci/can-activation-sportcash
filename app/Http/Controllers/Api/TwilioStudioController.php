@@ -835,22 +835,12 @@ class TwilioStudioController extends Controller
             }
         }
 
-        // Construire le message des matchs restants
+        // Construire le message des matchs restants (simplifié pour éviter la redondance avec le flow)
         $remainingMatchesMessage = "";
         if ($matchesWithoutPronostic->isNotEmpty()) {
-            $remainingMatchesMessage = "⚽ *MATCHS DISPONIBLES*\n\n";
-            $remainingMatchesMessage .= "Tu peux encore parier sur :\n\n";
-            
-            foreach ($matchesWithoutPronostic as $index => $match) {
-                $number = $index + 1;
-                $date = $match->match_date->format('d/m/Y');
-                $time = $match->match_date->format('H:i');
-                
-                $remainingMatchesMessage .= "{$number}. {$match->team_a} 🆚 {$match->team_b}\n";
-                $remainingMatchesMessage .= "   📅 {$date} à {$time}\n\n";
-            }
-            
-            $remainingMatchesMessage .= "💡 Envoie le numéro du match pour faire ton pronostic !";
+            $count = $matchesWithoutPronostic->count();
+            $matchText = $count === 1 ? 'match disponible' : 'matchs disponibles';
+            $remainingMatchesMessage = "\n⚽ {$count} {$matchText}\n";
         }
 
         Log::info('User pronostics retrieved', [
