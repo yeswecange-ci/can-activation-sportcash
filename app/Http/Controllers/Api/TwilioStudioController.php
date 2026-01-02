@@ -579,12 +579,59 @@ class TwilioStudioController extends Controller
 
         if ($matches->isEmpty()) {
             return response()->json([
-                'success'     => true,
-                'has_matches' => false,
-                'message'     => "⚽ Aucun match programmé pour le moment.\n\nRevenez bientôt pour découvrir les prochaines rencontres !",
+                'success'      => true,
+                'has_matches'  => false,
+                'single_match' => false,
+                'message'      => "⚽ Aucun match programmé pour le moment.\n\nRevenez bientôt pour découvrir les prochaines rencontres !",
             ]);
         }
 
+        $matchCount = $matches->count();
+        $singleMatch = $matchCount === 1;
+
+        // Si un seul match disponible, afficher directement les options de pronostic
+        if ($singleMatch) {
+            $match = $matches->first();
+            $date = $match->match_date->format('d/m/Y');
+            $time = $match->match_date->format('H:i');
+
+            $message = "⚽ *MATCH DISPONIBLE*\n\n";
+            $message .= "🔥 {$match->team_a} vs {$match->team_b} 🔥\n";
+            $message .= "📅 {$date} à {$time}\n\n";
+            $message .= "🏆 TON PRONOSTIC :\n\n";
+            $message .= "👉 Qui va gagner selon toi?\n\n";
+            $message .= "1️⃣ Victoire {$match->team_a}\n";
+            $message .= "2️⃣ Victoire {$match->team_b}\n";
+            $message .= "3️⃣ 🤝 Match nul\n\n";
+            $message .= "📩 Réponds simplement par 1, 2 ou 3 et valide ton pronostic !";
+
+            return response()->json([
+                'success'      => true,
+                'has_matches'  => true,
+                'single_match' => true,
+                'count'        => 1,
+                'message'      => $message,
+                'match'        => [
+                    'id'                => $match->id,
+                    'team_a'            => $match->team_a,
+                    'team_b'            => $match->team_b,
+                    'match_date'        => $date,
+                    'match_time'        => $time,
+                    'pronostic_enabled' => $match->pronostic_enabled,
+                ],
+                'matches'      => [[
+                    'id'                => $match->id,
+                    'number'            => 1,
+                    'team_a'            => $match->team_a,
+                    'team_b'            => $match->team_b,
+                    'match_date'        => $date,
+                    'match_time'        => $time,
+                    'pronostic_enabled' => $match->pronostic_enabled,
+                ]],
+            ]);
+        }
+
+        // Si plusieurs matchs, afficher la liste classique
         $message = "⚽ *PROCHAINS MATCHS CAN 2025*\n\n";
 
         foreach ($matches as $index => $match) {
@@ -601,11 +648,12 @@ class TwilioStudioController extends Controller
         $message .= "💡 Envoie le numéro correspondant à ton match pour faire ton pronostic !";
 
         return response()->json([
-            'success'     => true,
-            'has_matches' => true,
-            'count'       => $matches->count(),
-            'message'     => $message,
-            'matches'     => $matches->map(function ($match, $index) {
+            'success'      => true,
+            'has_matches'  => true,
+            'single_match' => false,
+            'count'        => $matchCount,
+            'message'      => $message,
+            'matches'      => $matches->map(function ($match, $index) {
                 return [
                     'id'                => $match->id,
                     'number'            => $index + 1,
