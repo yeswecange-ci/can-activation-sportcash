@@ -842,11 +842,18 @@ class TwilioStudioController extends Controller
 
         // Construire le message des matchs restants (simplifié pour éviter la redondance avec le flow)
         $remainingMatchesMessage = "";
-        if ($matchesWithoutPronostic->isNotEmpty()) {
+
+        // Cas 1 : Aucun match ouvert pour pronostics
+        if ($availableMatches->isEmpty()) {
+            $remainingMatchesMessage = "\n⏸️ Aucun pronostic disponible pour le moment.\n\n📅 Reviens plus tard pour de nouveaux matchs !\n";
+        }
+        // Cas 2 : Il y a des matchs disponibles mais l'utilisateur n'a pas tout fait
+        elseif ($matchesWithoutPronostic->isNotEmpty()) {
             $count = $matchesWithoutPronostic->count();
             $matchText = $count === 1 ? 'match disponible' : 'matchs disponibles';
             $remainingMatchesMessage = "\n⚽ {$count} {$matchText}\n";
         }
+        // Cas 3 : L'utilisateur a fait tous ses pronostics → message vide (géré par has_all_pronostics)
 
         Log::info('User pronostics retrieved', [
             'user_id' => $user->id,
